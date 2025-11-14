@@ -1,0 +1,25 @@
+{
+  "name": "growing-giant",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/cloudflare": "^12.6.10",
+    "@astrojs/mdx": "^4.3.10",
+    "@astrojs/rss": "^4.0.13",
+    "@astrojs/sitemap": "^3.6.0",
+    "astro": "^5.15.7",
+    "sharp": "^0.34.3"
+  },
+  "packageManager": "yarn@4.11.0",
+  "devDependencies": {
+    "@cloudflare/unenv-preset": "^2.7.10",
+    "unenv": "2.0.0-rc.24",
+    "wrangler": "^4.48.0"
+  }
+}
