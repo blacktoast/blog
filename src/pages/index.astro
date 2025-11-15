@@ -1,24 +1,17 @@
 ---
-import BaseHead from '../components/BaseHead.astro';
-import Footer from '../components/Footer.astro';
-import Header from '../components/Header.astro';
-import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
+import Header from '@/components/Header.astro';
+import Footer from '@/components/Footer.astro';
+import Layout from '@/layouts/Layout.astro';
+
 ---
 
-<!doctype html>
-<html lang="en">
-	<head>
-		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
-	</head>
-	<body>
-		<Header />
-		<main>
-			<h1>🧑‍🚀 Hello, Astronaut!</h1>
-			<p>
+<Layout>
+	<Header />
+		<main class="prose"> 
+			<h1 class="text-3xl font-bold">🧑‍🚀 Hello, Astronaut!</h1>
 				Welcome to the official <a href="https://astro.build/">Astro</a> blog starter template. This
 				template serves as a lightweight, minimally-styled starting point for anyone looking to build
 				a personal website, blog, or portfolio with Astro.
-			</p>
 			<p>
 				This template comes with a few integrations already configured in your
 				<code>astro.config.mjs</code> file. You can customize your setup with
@@ -45,5 +38,4 @@ import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
 			</p>
 		</main>
 		<Footer />
-	</body>
-</html>
+</Layout>

@@ -9,16 +9,24 @@
     "astro": "astro"
   },
   "dependencies": {
+    "@astrojs/check": "^0.9.5",
     "@astrojs/cloudflare": "^12.6.10",
     "@astrojs/mdx": "^4.3.10",
     "@astrojs/rss": "^4.0.13",
     "@astrojs/sitemap": "^3.6.0",
+    "@shikijs/transformers": "^3.7.0",
+    "@tailwindcss/vite": "^4.1.17",
     "astro": "^5.15.7",
-    "sharp": "^0.34.3"
+    "remark-collapse": "^0.1.2",
+    "remark-toc": "^9.0.0",
+    "sharp": "^0.34.3",
+    "tailwindcss": "^4.1.17",
+    "typescript": "^5.9.3"
   },
   "packageManager": "yarn@4.11.0",
   "devDependencies": {
     "@cloudflare/unenv-preset": "^2.7.10",
+    "@tailwindcss/typography": "^0.5.19",
     "unenv": "2.0.0-rc.24",
     "wrangler": "^4.48.0"
   }
