@@ -48,6 +48,11 @@ html[data-theme="dark"] {
   [role="button"]:not(:disabled) {
     cursor: pointer;
   }
+
+  main {
+    @apply mx-auto w-full max-w-app px-4;
+  }
+
   section,
   footer {
     @apply mx-auto max-w-app px-4;
