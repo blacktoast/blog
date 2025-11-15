@@ -6,7 +6,9 @@ import HeaderLink from './HeaderLink.astro';
 <header class="m-0 px-4 bg-background border-b border-border text-foreground mb-4">
 	<nav class="mx-auto max-w-app px-4 flex items-center justify-between gap-4 flex-wrap">
 		<h2 class="m-0 text-base">
-			<a href="/" class="no-underline text-inherit">{SITE_TITLE}</a>
+			<a href="/" class="no-underline text-inherit relative inline-block overflow-hidden h-[1.5em]">
+				<span id="site-title-text" class="inline-block transition-all duration-500 ease-in-out">retto</span>
+			</a>
 		</h2>
 		
 		<div class="flex items-center flex-wrap gap-2">
@@ -61,3 +63,96 @@ import HeaderLink from './HeaderLink.astro';
 		</div>
 	</nav>
 </header>
+
+<script is:inline data-astro-rerun>
+	(function() {
+		const titles = ['retto', '해달', 'ラッコ', '海獺', 'Loutre'];
+		const INTERVAL_DURATION = 2000; // 2초
+		
+		if (!window.__siteTitleState) {
+			window.__siteTitleState = {
+				currentIndex: 0,
+				lastUpdateTime: Date.now(),
+				intervalId: null
+			};
+		}
+		
+		const state = window.__siteTitleState;
+		const now = Date.now();
+		const timeSinceLastUpdate = now - state.lastUpdateTime;
+		
+		// 경과한 시간만큼 인덱스 진행
+		if (timeSinceLastUpdate > 0) {
+			const intervalsPassed = Math.floor(timeSinceLastUpdate / INTERVAL_DURATION);
+			state.currentIndex = (state.currentIndex + intervalsPassed) % titles.length;
+		}
+
+		function initTitleRotation() {
+			const titleElement = document.getElementById('site-title-text');
+			if (!titleElement) {
+				setTimeout(initTitleRotation, 100);
+				return;
+			}
+
+			// 기존 인터벌 정리
+			if (state.intervalId) {
+				clearInterval(state.intervalId);
+			}
+
+			// 현재 인덱스의 타이틀 표시
+			titleElement.textContent = titles[state.currentIndex];
+			titleElement.style.transform = 'translateY(0)';
+			titleElement.style.opacity = '1';
+
+			function rotateTitle() {
+				// 현재 텍스트를 위로 사라지게
+				titleElement.style.transform = 'translateY(-100%)';
+				titleElement.style.opacity = '0';
+				
+				setTimeout(() => {
+					// 다음 텍스트로 변경
+					state.currentIndex = (state.currentIndex + 1) % titles.length;
+					state.lastUpdateTime = Date.now();
+					titleElement.textContent = titles[state.currentIndex];
+					
+					// 아래에서 시작 위치로 설정
+					titleElement.style.transform = 'translateY(100%)';
+					titleElement.style.opacity = '0';
+					
+					// 다음 프레임에서 애니메이션 시작
+					requestAnimationFrame(() => {
+						requestAnimationFrame(() => {
+							titleElement.style.transform = 'translateY(0)';
+							titleElement.style.opacity = '1';
+						});
+					});
+				}, 250);
+			}
+
+			// 다음 변경까지 남은 시간 계산
+			const timeUntilNextChange = timeSinceLastUpdate >= INTERVAL_DURATION 
+				? INTERVAL_DURATION 
+				: INTERVAL_DURATION - (timeSinceLastUpdate % INTERVAL_DURATION);
+			
+			// 남은 시간 후 첫 변경, 그 다음부터는 정기적으로 변경
+			setTimeout(() => {
+				rotateTitle();
+				state.intervalId = setInterval(rotateTitle, INTERVAL_DURATION);
+			}, timeUntilNextChange);
+		}
+
+		// DOM이 로드된 후 실행
+		if (document.readyState === 'loading') {
+			document.addEventListener('DOMContentLoaded', initTitleRotation);
+		} else {
+			initTitleRotation();
+		}
+	})();
+</script>
+
+<style>
+	#site-title-text {
+		display: inline-block;
+		will-change: transform, opacity;
+	}
+</style>
