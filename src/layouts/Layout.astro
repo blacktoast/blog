@@ -2,8 +2,6 @@
 import { ClientRouter } from "astro:transitions";
 import { SITE } from "../config";
 import "@/styles/global.css";
-import BaseHead from "@/components/BaseHead.astro";
-import Header from "@/components/Header.astro";
 
 export interface Props {
   title?: string;
@@ -51,6 +49,7 @@ const structuredData = {
 <!doctype html>
 <html
   lang="ko"
+  data-theme="light"
   class={`${scrollSmooth && "scroll-smooth"}`}
 >
   <head>
@@ -130,7 +129,7 @@ const structuredData = {
     <ClientRouter />
 
 
-    <!-- <script is:inline src="/toggle-theme.js"></script> -->
+    <script is:inline src="/toggle-theme.js"></script>
   </head>
   <body>
     <slot />
