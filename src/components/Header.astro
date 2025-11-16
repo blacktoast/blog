@@ -1,11 +1,15 @@
 ---
 import HeaderLink from './HeaderLink.astro';
+import HaedalImg from '@/assets/haedal-img.webp';
 ---
 
 <header class="m-0 px-4 bg-background border-b border-border text-foreground mb-4">
 	<nav class="mx-auto max-w-app px-4 flex items-center justify-between gap-4 flex-wrap">
 		<h2 class="m-0 text-base">
-			<a href="/" class="no-underline text-inherit">Blog</a>
+			
+			<a href="/" class="no-underline text-inherit">
+				<img src={HaedalImg.src} alt="Blog" class="w-10 h-10 rounded-full border-none m-0 p-0" />
+			</a>
 		</h2>
 		
 		<div class="flex items-center flex-wrap gap-2">
