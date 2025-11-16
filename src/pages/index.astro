@@ -9,35 +9,137 @@ import Layout from '@/layouts/Layout.astro';
 	<Header />
 		<main> 
 			<h1 class="text-3xl font-bold">🧑‍🚀 Hello, Astronaut!</h1>
-			<p>
-				Welcome to the official <a href="https://astro.build/">Astro</a> blog starter template. This
-				template serves as a lightweight, minimally-styled starting point for anyone looking to build
-				a personal website, blog, or portfolio with Astro.
-			</p>
-			<p>
-				This template comes with a few integrations already configured in your
-				<code>astro.config.mjs</code> file. You can customize your setup with
-				<a href="https://astro.build/integrations">Astro Integrations</a> to add tools like Tailwind,
-				React, or Vue to your project.
-			</p>
-			<p>Here are a few ideas on how to get started with the template:</p>
-			<ul>
-				<li>Edit this page in <code>src/pages/index.astro</code></li>
-				<li>Edit the site header items in <code>src/components/Header.astro</code></li>
-				<li>Add your name to the footer in <code>src/components/Footer.astro</code></li>
-				<li>Check out the included blog posts in <code>src/content/blog/</code></li>
-				<li>Customize the blog post page layout in <code>src/layouts/BlogPost.astro</code></li>
-			</ul>
-			<p>
-				Have fun! If you get stuck, remember to
-				<a href="https://docs.astro.build/">read the docs</a>
-				or <a href="https://astro.build/chat">join us on Discord</a> to ask questions.
-			</p>
-			<p>
-				Looking for a blog template with a bit more personality? Check out
-				<a href="https://github.com/Charca/astro-blog-template">astro-blog-template</a>
-				by <a href="https://twitter.com/Charca">Maxi Ferreira</a>.
+			<p class="flex items-center">
+				Hello, this is <span id="blog-title-text" class="px-2 inline-block transition-all duration-500 ease-in-out special-font relative overflow-hidden" />!
 			</p>
 		</main>
 		<Footer />
 </Layout>
+
+<style>	
+	.special-font {
+		font-weight: 900;
+	}
+	
+	.special-font[data-lang="it"] {
+		font-family: 'JPLogo', sans-serif;
+	}
+	
+	.special-font[data-lang="ko"] {
+		font-family: 'JPLogo', sans-serif;
+	}
+	
+	.special-font[data-lang="ja"] {
+		font-family: 'JPLogo-2', 'JPLogo', sans-serif;
+		font-weight: normal;
+	}
+	
+	.special-font[data-lang="zh"] {
+		font-family: 'JPLogo-2', 'JPLogo', sans-serif;
+		font-weight: normal;
+	}
+	
+	.special-font[data-lang="fr"] {
+		font-family: 'JPLogo', sans-serif;
+	}
+	
+	#blog-title-text {
+		display: inline-block;
+		will-change: transform, opacity;
+	}
+</style>
+
+<script is:inline data-astro-rerun>
+	(function() {
+		const titles = [
+		  { text: '레또의 블로그 🇰🇷', lang: 'ko' },      // 한국어
+			{ text: "Retto's blog 🇺🇸", lang: 'en' },    // 영어
+			{ text: 'ラッコのブログ 🇯🇵', lang: 'ja' },    // 일본어
+			{ text: '海獺的博客 🇨🇳', lang: 'zh' },      // 중국어
+			{ text: 'Le Blog de Loutre 🇫🇷', lang: 'fr' } ,   // 프랑스어
+			{ text: 'Sjøoter’s Blog 🇳🇴', lang: 'no' } ,    // 노르웨이어
+		];
+		const INTERVAL_DURATION = 2000; // 2초
+		
+		if (!window.__siteTitleState) {
+			window.__siteTitleState = {
+				currentIndex: 0,
+				lastUpdateTime: Date.now(),
+				intervalId: null
+			};
+		}
+		
+		const state = window.__siteTitleState;
+		const now = Date.now();
+		const timeSinceLastUpdate = now - state.lastUpdateTime;
+		
+		// 경과한 시간만큼 인덱스 진행
+		if (timeSinceLastUpdate > 0) {
+			const intervalsPassed = Math.floor(timeSinceLastUpdate / INTERVAL_DURATION);
+			state.currentIndex = (state.currentIndex + intervalsPassed) % titles.length;
+		}
+
+		function applyTitle(titleElement, index) {
+			const title = titles[index];
+			titleElement.textContent = title.text;
+			titleElement.setAttribute('data-lang', title.lang);
+		}
+
+		function initTitleRotation() {
+			const titleElement = document.getElementById('blog-title-text');
+			if (!titleElement) {
+				setTimeout(initTitleRotation, 100);
+				return;
+			}
+
+			// 기존 인터벌 정리
+			if (state.intervalId) {
+				clearInterval(state.intervalId);
+			}
+
+			applyTitle(titleElement, state.currentIndex);
+			titleElement.style.transform = 'translateY(0)';
+			titleElement.style.opacity = '1';
+
+			function rotateTitle() {
+				titleElement.style.transform = 'translateY(-100%)';
+				titleElement.style.opacity = '0';
+				
+				setTimeout(() => {
+					// 다음 텍스트로 변경
+					state.currentIndex = (state.currentIndex + 1) % titles.length;
+					state.lastUpdateTime = Date.now();
+					applyTitle(titleElement, state.currentIndex);
+					
+					titleElement.style.transform = 'translateY(100%)';
+					titleElement.style.opacity = '0';
+					
+					requestAnimationFrame(() => {
+						requestAnimationFrame(() => {
+							titleElement.style.transform = 'translateY(0)';
+							titleElement.style.opacity = '1';
+						});
+					});
+				}, 250);
+			}
+
+			// 다음 변경까지 남은 시간 계산
+			const timeUntilNextChange = timeSinceLastUpdate >= INTERVAL_DURATION 
+				? INTERVAL_DURATION 
+				: INTERVAL_DURATION - (timeSinceLastUpdate % INTERVAL_DURATION);
+			
+			// 남은 시간 후 첫 변경, 그 다음부터는 정기적으로 변경
+			setTimeout(() => {
+				rotateTitle();
+				state.intervalId = setInterval(rotateTitle, INTERVAL_DURATION);
+			}, timeUntilNextChange);
+		}
+
+		// DOM이 로드된 후 실행
+		if (document.readyState === 'loading') {
+			document.addEventListener('DOMContentLoaded', initTitleRotation);
+		} else {
+			initTitleRotation();
+		}
+	})();
+</script>
