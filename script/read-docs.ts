@@ -34,16 +34,32 @@ function getRequiredEnv(key: string): string {
   return trimmedValue;
 }
 
-function parsePaths(rawValue: string, pathRoot: string): readonly string[] {
+function getHomeDirectory(): string {
+  const homeValue = process.env.HOME;
+  if (homeValue === undefined) {
+    throw new Error("Environment variable HOME is required.");
+  }
+  const trimmedHomeValue = homeValue.trim();
+  if (trimmedHomeValue.length === 0) {
+    throw new Error("Environment variable HOME cannot be empty.");
+  }
+  return normalize(trimmedHomeValue);
+}
+
+function parsePaths(
+  rawValue: string,
+  basePath: string,
+  label: string
+): readonly string[] {
   return rawValue
     .split(",")
     .map((entry) => entry.trim())
     .filter((entry) => entry.length > 0)
-    .map((entry) => resolveRelativeToRoot(pathRoot, entry, "Blog path"));
+    .map((entry) => resolveRelativePath(basePath, entry, label));
 }
 
-function resolveRelativeToRoot(
-  pathRoot: string,
+function resolveRelativePath(
+  basePath: string,
   targetPath: string,
   label: string
 ): string {
@@ -52,41 +68,47 @@ function resolveRelativeToRoot(
     throw new Error(`${label} must not be empty.`);
   }
   if (isAbsolute(sanitizedTarget)) {
-    throw new Error(
-      `${label} ${targetPath} must be relative to PATH_ROOT ${pathRoot}.`
-    );
+    throw new Error(`${label} ${targetPath} must be relative to ${basePath}.`);
   }
-  const resolvedPath = normalize(resolve(pathRoot, sanitizedTarget));
-  ensureWithinRoot(resolvedPath, pathRoot, label);
+  const resolvedPath = normalize(resolve(basePath, sanitizedTarget));
+  ensureWithinBase(resolvedPath, basePath, label);
   return resolvedPath;
 }
 
-function ensureWithinRoot(
+function ensureWithinBase(
   candidatePath: string,
-  pathRoot: string,
+  basePath: string,
   label: string
 ): void {
-  const normalizedRoot = normalize(pathRoot);
-  const relativePathValue = relative(normalizedRoot, candidatePath);
+  const normalizedBasePath = normalize(basePath);
+  const relativePathValue = relative(normalizedBasePath, candidatePath);
   if (
     relativePathValue.length > 0 &&
     relativePathValue !== "." &&
     relativePathValue.startsWith("..")
   ) {
     throw new Error(
-      `${label} ${candidatePath} must stay within PATH_ROOT ${normalizedRoot}.`
+      `${label} ${candidatePath} must stay within ${normalizedBasePath}.`
     );
   }
 }
 
 function loadPathConfig(): PathConfig {
-  const pathRoot = getRequiredEnv("PATH_ROOT");
+  const homeDirectory = getHomeDirectory();
+  const pathRootValue = getRequiredEnv("PATH_ROOT");
   const blogValue = getRequiredEnv("PATH_BLOG");
   const logValue = getRequiredEnv("PATH_LOG");
-
-  const blogPaths = parsePaths(blogValue, pathRoot);
-  const logPath = parsePaths(logValue, pathRoot);
-  return { pathRoot, blogPaths, logPath: logPath[0] };
+  const pathRoot = resolveRelativePath(
+    homeDirectory,
+    pathRootValue,
+    "PATH_ROOT"
+  );
+  const blogPaths = parsePaths(blogValue, pathRoot, "Blog path");
+  const logPaths = parsePaths(logValue, pathRoot, "Log path");
+  if (logPaths.length === 0) {
+    throw new Error("PATH_LOG must contain at least one path.");
+  }
+  return { pathRoot, blogPaths, logPath: logPaths[0] };
 }
 
 async function collectDocumentsFromDirectory(
