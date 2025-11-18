@@ -1,4 +1,4 @@
-import { mkdir, readFile, stat, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import {
   basename,
   extname,
@@ -17,6 +17,22 @@ import {
   type FrontmatterRecord,
 } from "./parse-blog.js";
 import { type PathConfig, loadPathConfig } from "./get-path.js";
+import { IS_DEBUG_MODE } from "./constants/debug.js";
+import { processEmbeddedImages } from "./parse-image.js";
+
+let syncLogSequence = 0;
+
+function logSyncStep(message: string, context?: Record<string, unknown>): void {
+  if (!IS_DEBUG_MODE) {
+    return;
+  }
+  syncLogSequence += 1;
+  if (context !== undefined) {
+    console.log(`[sync:${syncLogSequence}] ${message}`, context);
+    return;
+  }
+  console.log(`[sync:${syncLogSequence}] ${message}`);
+}
 
 type BlogEntry = {
   slug: string;
@@ -349,9 +365,15 @@ async function rewriteNoteBody(
   note: NoteDocument,
   context: LinkResolutionContext
 ): Promise<string> {
+  logSyncStep("rewriteNoteBody:start", {
+    notePath: note.sourcePath,
+  });
   const doubleBracketPattern = /\[\[([^\]]+)\]\]/g;
   const matches = Array.from(note.body.matchAll(doubleBracketPattern));
   if (matches.length === 0) {
+    logSyncStep("rewriteNoteBody:no-links", {
+      notePath: note.sourcePath,
+    });
     return note.body;
   }
   let rewritten = note.body;
@@ -365,7 +387,16 @@ async function rewriteNoteBody(
       rewritten.slice(0, matchIndex) +
       replacement +
       rewritten.slice(matchIndex + fullMatch.length);
+    logSyncStep("rewriteNoteBody:link-resolved", {
+      notePath: note.sourcePath,
+      referenceText,
+      url: resolved.url,
+    });
   }
+  logSyncStep("rewriteNoteBody:completed", {
+    notePath: note.sourcePath,
+    replacements: matches.length,
+  });
   return rewritten;
 }
 
@@ -374,10 +405,19 @@ async function synchronizePublishedNotes(
   outputDir: string,
   context: LinkResolutionContext
 ): Promise<SyncResult> {
+  logSyncStep("synchronizePublishedNotes:start", {
+    notes: notes.map((note) => note.sourcePath),
+    outputDir,
+  });
   await mkdir(outputDir, { recursive: true });
   const entries: BlogEntry[] = [];
   let writtenCount = 0;
+  const assetSourceRootDirectory = resolve(context.rootDir, "assets");
   for (const note of notes) {
+    logSyncStep("synchronizePublishedNotes:note-start", {
+      notePath: note.sourcePath,
+      slug: note.metadata.slug,
+    });
     const extension =
       extname(note.sourcePath).toLowerCase() === ".mdx" ? ".mdx" : ".md";
     const destinationPath = join(
@@ -385,12 +425,26 @@ async function synchronizePublishedNotes(
       `${note.metadata.slug}${extension}`
     );
     const blogFrontmatter = buildBlogFrontmatter(note);
-    const transformedBody = await rewriteNoteBody(note, context);
+    const bodyWithImages = await processEmbeddedImages(note, {
+      assetSourceRootDirectory,
+    });
+    logSyncStep("synchronizePublishedNotes:images-processed", {
+      notePath: note.sourcePath,
+    });
+    const noteWithImages: NoteDocument = { ...note, body: bodyWithImages };
+    const transformedBody = await rewriteNoteBody(noteWithImages, context);
+    logSyncStep("synchronizePublishedNotes:links-rewritten", {
+      notePath: note.sourcePath,
+    });
     const rewrittenBody = ensureTrailingNewline(
       trimLeadingBlankLines(transformedBody)
     );
     const documentContent = `${serializeBlogFrontmatter(blogFrontmatter)}\n${rewrittenBody}`;
     await writeFile(destinationPath, documentContent, "utf8");
+    logSyncStep("synchronizePublishedNotes:note-written", {
+      notePath: note.sourcePath,
+      destinationPath,
+    });
     writtenCount += 1;
     entries.push({
       slug: note.metadata.slug,
@@ -401,6 +455,9 @@ async function synchronizePublishedNotes(
       },
     });
   }
+  logSyncStep("synchronizePublishedNotes:completed", {
+    writtenCount,
+  });
   return { writtenCount, entries };
 }
 
@@ -553,6 +610,7 @@ function findDuplicateEntry(
 }
 
 async function run(): Promise<void> {
+  logSyncStep("run:start");
   const config = loadPathConfig();
   console.log(`[config] ROOT: ${config.rootDir}`);
   console.log(`[config] BLOG OUTPUT: ${config.blogOutputDir}`);
@@ -602,6 +660,11 @@ async function run(): Promise<void> {
   console.log(
     `[summary] scanned ${sourceNotes.length} notes, published ${publishedNotes.length}, wrote ${syncResult.writtenCount} files.`
   );
+  logSyncStep("run:completed", {
+    totalNotes: sourceNotes.length,
+    publishedNotes: publishedNotes.length,
+    writtenCount: syncResult.writtenCount,
+  });
 }
 
 run().catch((error) => {
