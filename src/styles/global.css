@@ -19,19 +19,43 @@
 
 :root,
 html[data-theme="light"] {
-  --background: #fdfdfd;
-  --foreground: #282728;
-  --accent: #006cac;
-  --muted: #e6e6e6;
-  --border: #ece9e9;
+  /* Summer Sea Theme */
+  --background: #e0f7fa;
+  --foreground: #1d3557;
+  --accent: #0288d1;
+  --muted: #457b9d;
+  --border: rgba(29, 53, 87, 0.15);
+
+  --bg-image:
+    radial-gradient(
+      circle at 50% 0%,
+      rgba(255, 255, 255, 0.6),
+      transparent 60%
+    ),
+    radial-gradient(
+      circle at 90% 10%,
+      rgba(255, 168, 61, 0.15),
+      transparent 40%
+    ),
+    linear-gradient(180deg, #e0f7fa 0%, #80deea 100%);
 }
 
 html[data-theme="dark"] {
-  --background: #212737;
-  --foreground: #eaedf3;
-  --accent: #ff6b01;
-  --muted: #343f60;
-  --border: #ab4b08;
+  /* Haedal Theme */
+  --background: #0b1421;
+  --foreground: #f6f7fb;
+  --accent: #f9a826;
+  --muted: rgba(236, 242, 255, 0.75);
+  --border: rgba(255, 255, 255, 0.06);
+
+  --bg-image:
+    radial-gradient(circle at top, rgba(61, 102, 173, 0.25), transparent 60%),
+    radial-gradient(
+      circle at 80% 20%,
+      rgba(194, 61, 255, 0.15),
+      transparent 55%
+    ),
+    linear-gradient(165deg, #16233a 0%, #0b1421 60%);
 }
 
 @theme inline {
@@ -53,6 +77,9 @@ html[data-theme="dark"] {
   }
   body {
     @apply flex min-h-svh flex-col bg-background font-mono text-foreground selection:bg-accent/75 selection:text-background;
+    background-image: var(--bg-image);
+    background-attachment: fixed;
+    background-size: cover;
   }
   a,
   button {

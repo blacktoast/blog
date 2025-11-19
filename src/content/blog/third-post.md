@@ -2,6 +2,10 @@
 title: 'Third post'
 description: 'Lorem ipsum dolor sit amet'
 pubDate: 'Jul 22 2022'
+updatedDate: 'May 24 2025'
+tags:
+  - Haedal
+  - Design
 heroImage: '../../assets/blog-placeholder-2.jpg'
 ---
 

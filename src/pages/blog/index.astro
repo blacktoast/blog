@@ -1,119 +1,77 @@
 ---
-import { Image } from 'astro:assets';
-import { getCollection } from 'astro:content';
-import BaseHead from '../../components/BaseHead.astro';
-import Footer from '../../components/Footer.astro';
-import FormattedDate from '../../components/FormattedDate.astro';
-import Header from '../../components/Header.astro';
-import { SITE_DESCRIPTION, SITE_TITLE } from '../../constants';
+import Header from '@/components/Header.astro';
+import FormattedDate from '@/components/FormattedDate.astro';
 import Layout from '@/layouts/Layout.astro';
+import { getCollection } from 'astro:content';
 
 const posts = (await getCollection('blog')).sort(
 	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
 );
+
+const pageTitle = 'Posts';
+const pageDescription = "All the articles I've posted.";
 ---
 
-<Layout>
-<!-- <!doctype html>
-<html lang="en">
-	<head>
-		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
-		<style>
-			main {
-				width: 960px;
-			}
-			ul {
-				display: flex;
-				flex-wrap: wrap;
-				gap: 2rem;
-				list-style-type: none;
-				margin: 0;
-				padding: 0;
-			}
-			ul li {
-				width: calc(50% - 1rem);
-			}
-			ul li * {
-				text-decoration: none;
-				transition: 0.2s ease;
-			}
-			ul li:first-child {
-				width: 100%;
-				margin-bottom: 1rem;
-				text-align: center;
-			}
-			ul li:first-child img {
-				width: 100%;
-			}
-			ul li:first-child .title {
-				font-size: 2.369rem;
-			}
-			ul li img {
-				margin-bottom: 0.5rem;
-				border-radius: 12px;
-			}
-			ul li a {
-				display: block;
-			}
-			.title {
-				margin: 0;
-				color: var(--color-foreground);
-				line-height: 1;
-			}
-			.date {
-				margin: 0;
-				color: var(--color-foreground);
-				opacity: 0.75;
-			}
-			ul li a:hover h4,
-			ul li a:hover .date {
-				color: var(--color-accent);
-			}
-			ul a:hover img {
-				box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
-			}
-			@media (max-width: 720px) {
-				ul {
-					gap: 0.5em;
-				}
-				ul li {
-					width: 100%;
-					text-align: center;
-				}
-				ul li:first-child {
-					margin-bottom: 0;
-				}
-				ul li:first-child .title {
-					font-size: 1.563em;
-				}
-			}
-		</style>
-	</head> -->
-	<!-- <body> -->
-		<Header />
-		<main>
-			<section>
-				<ul>
-					{
-						posts.map((post) => (
-							<li>
-								<a href={`/blog/${post.id}/`}>
-									{post.data.heroImage && (
-										<Image width={720} height={360} src={post.data.heroImage} alt="" />
-									)}
-									<h4 class="title">{post.data.title}</h4>
-									<p class="date">
-										<FormattedDate date={post.data.pubDate} />
-									</p>
-								</a>
-							</li>
-						))
-					}
-				</ul>
-			</section>
-		</main>
-		<!-- <Footer />
-	</body>
-</html> -->
+<Layout title={pageTitle} description={pageDescription}>
+	<Header />
+	<main 
+		class="flex flex-col gap-14 w-full max-w-[780px] mx-auto px-6 pt-16 pb-20 text-inherit max-sm:px-5 max-sm:py-14" 
+		aria-labelledby="posts-heading"
+	>
+		<section class="flex flex-col gap-3">
+			<p class="flex items-center gap-2 m-0 text-[0.95rem] text-muted">
+				<a href="/" class="text-inherit no-underline relative after:content-[''] after:absolute after:left-0 after:-bottom-1 after:w-full after:h-px after:bg-current after:opacity-0 after:scale-x-0 after:origin-left after:transition-[transform,opacity] after:duration-150 after:ease-out hover:after:opacity-100 hover:after:scale-x-100 focus-visible:after:opacity-100 focus-visible:after:scale-x-100">Home</a>
+				<span aria-hidden="true" class="text-muted">»</span>
+				<span>Posts</span>
+				<span class="ml-1 text-muted text-[0.9rem] page-indicator">(Page 1)</span>
+			</p>
+			<h1 id="posts-heading" class="m-0 text-[clamp(2.25rem,4vw,3rem)] font-bold text-foreground">{pageTitle}</h1>
+			<p class="m-0 text-[1.1rem] text-muted max-w-lg">{pageDescription}</p>
+		</section>
 
+		<section aria-label="Blog posts">
+			<ul class="list-none m-0 p-0 flex flex-col gap-10">
+				{
+					posts.map((post) => {
+						const displayDate =
+							post.data.updatedDate ?? post.data.pubDate;
+						const tags = post.data.tags ?? [];
+
+						return (
+							<li class="flex flex-col gap-[0.85rem] pb-[2.2rem] border-b border-border max-sm:pb-[1.8rem]">
+								<a 
+									class="text-[clamp(1.6rem,3vw,1.9rem)] font-bold text-accent no-underline inline-flex items-center gap-2 transition-[transform,text-shadow] duration-150 ease-out hover:-translate-y-0.5 hover:shadow-lg hover:shadow-accent/30 focus-visible:-translate-y-0.5 focus-visible:shadow-accent/30" 
+									href={`/blog/${post.id}/`}
+								>
+									{post.data.title}
+								</a>
+								<div class="flex items-center gap-[0.65rem] flex-wrap text-[0.95rem] text-muted max-sm:gap-2">
+									<span class="text-[1.05rem]" aria-hidden="true">📅</span>
+									<span class="font-semibold uppercase tracking-wider">Updated</span>
+									<span class="font-medium text-foreground">
+										<FormattedDate date={displayDate} />
+									</span>
+									{
+										tags.length > 0 && (
+											<ul class="flex items-center gap-2 m-0 ml-2 p-0 list-none max-sm:ml-0" aria-label="Tags">
+												{
+													tags.map((tag) => (
+														<li class="inline-flex items-center gap-[0.35rem] py-[0.35rem] px-[0.8rem] rounded-full bg-muted/10 border border-border text-foreground text-[0.85rem] font-semibold transition-[transform,background] duration-150 ease-out hover:-translate-y-px hover:bg-accent/15 focus-visible:-translate-y-px focus-visible:bg-accent/15">
+															<span aria-hidden="true" class="text-[0.95rem]">🦦</span>
+															{tag}
+														</li>
+													))
+												}
+											</ul>
+										)
+									}
+								</div>
+								<p class="m-0 text-muted leading-[1.7] text-[1.05rem] max-w-2xl">{post.data.description}</p>
+							</li>
+						);
+					})
+				}
+			</ul>
+		</section>
+	</main>
 </Layout>
