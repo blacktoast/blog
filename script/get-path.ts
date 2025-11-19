@@ -6,6 +6,7 @@ export type PathConfig = {
   rootDir: string;
   blogSourceDirs: readonly string[];
   logSourceDirs: readonly string[];
+  pathIgnore: readonly string[];
   blogOutputDir: string;
 };
 
@@ -89,14 +90,17 @@ export function loadPathConfig(): PathConfig {
   const pathRootRaw = getRequiredEnv("PATH_ROOT");
   const blogRaw = getRequiredEnv("PATH_BLOG");
   const logRaw = getRequiredEnv("PATH_LOG");
+  const ignoreRaw = process.env.PATH_IGNORE ?? "";
   const rootDir = resolveRelativePath(homeDir, pathRootRaw, "PATH_ROOT");
   const blogSourceDirs = parsePaths(blogRaw, rootDir, "Blog path");
   const logSourceDirs = parsePaths(logRaw, rootDir, "Log path");
+  const pathIgnore = parsePaths(ignoreRaw, rootDir, "Ignore path");
   return {
     homeDir,
     rootDir,
     blogSourceDirs,
     logSourceDirs,
+    pathIgnore,
     blogOutputDir: blogOutputDirectory,
   };
 }

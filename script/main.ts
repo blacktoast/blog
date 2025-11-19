@@ -19,6 +19,7 @@ import {
 import { type PathConfig, loadPathConfig } from "./get-path.js";
 import { IS_DEBUG_MODE } from "./constants/debug.js";
 import { processEmbeddedImages } from "./parse-image.js";
+import { synchronizeLogFiles } from "./parse-log.js";
 
 let syncLogSequence = 0;
 
@@ -665,6 +666,7 @@ async function run(): Promise<void> {
     publishedNotes: publishedNotes.length,
     writtenCount: syncResult.writtenCount,
   });
+  await synchronizeLogFiles(config);
 }
 
 run().catch((error) => {
