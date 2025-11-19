@@ -81,7 +81,7 @@ function isPathIgnored(filePath: string, ignorePaths: readonly string[]): boolea
     return ignorePaths.some(ignorePath => filePath.startsWith(ignorePath));
 }
 
-async function resolveLogLink(
+export async function resolveLogLink(
   reference: string,
   context: {
     notes: readonly NoteDocument[];
@@ -138,7 +138,7 @@ async function resolveLogLink(
     return { url: `/writing`, label: reference };
 }
 
-async function rewriteLogBody(
+export async function rewriteLogBody(
   note: NoteDocument,
   allNotes: readonly NoteDocument[],
   ignorePaths: readonly string[],
