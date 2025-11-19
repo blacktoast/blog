@@ -4,14 +4,35 @@ import BlogPost from '../../layouts/BlogPost.astro';
 
 export async function getStaticPaths() {
 	const posts = await getCollection('blog');
-	return posts.map((post) => ({
-		params: { slug: post.id },
-		props: post,
-	}));
+	return posts.flatMap((post) => {
+		const canonicalSlug = post.id;
+		const slugVariants = new Set<string>([
+			canonicalSlug,
+			canonicalSlug.normalize('NFD'),
+		]);
+
+		return Array.from(slugVariants).map((slugVariant) => ({
+			params: { slug: slugVariant },
+			props: post,
+		}));
+	});
 }
 type Props = CollectionEntry<'blog'>;
 
 const post = Astro.props;
+const canonicalSlug = post.id;
+const slugParam = Array.isArray(Astro.params.slug)
+	? Astro.params.slug.join('/')
+	: Astro.params.slug ?? '';
+
+if (slugParam && slugParam !== canonicalSlug) {
+	const encodedCanonicalSlug = canonicalSlug
+		.split('/')
+		.map((segment) => encodeURIComponent(segment))
+		.join('/');
+	return Astro.redirect(`/blog/${encodedCanonicalSlug}/`, 308);
+}
+
 const { Content } = await render(post);
 ---
 
