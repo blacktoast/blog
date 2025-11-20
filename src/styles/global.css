@@ -11,9 +11,9 @@
 }
 
 @font-face {
-  font-family: "JPLogo-2";
-  src: url("/fonts/jp-logo-2.woff2") format("woff2");
-  font-weight: normal;
+  font-family: "HomeHello";
+  src: url("/fonts/home-hello-en.woff2") format("woff2");
+  font-weight: 500;
   font-style: normal;
 }
 
