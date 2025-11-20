@@ -37,7 +37,7 @@ html[data-theme="light"] {
       rgba(255, 168, 61, 0.15),
       transparent 40%
     ),
-    linear-gradient(180deg, #e0f7fa 0%, #80deea 100%);
+    linear-gradient(180deg, #e0f7fa 0%, #ddf5f0 80%, #e0f7fa 100%);
 }
 
 html[data-theme="dark"] {
