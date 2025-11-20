@@ -4,13 +4,12 @@ import Footer from '@/components/Footer.astro';
 import Layout from '@/layouts/Layout.astro';
 
 ---
-
 <Layout>
 	<Header />
 		<main> 
 			<h1 class="text-3xl font-bold">🧑‍🚀 Hello, Astronaut!</h1>
 			<p class="flex items-center">
-				Hello, this is <span id="blog-title-text" class="px-2 inline-block transition-all duration-500 ease-in-out special-font relative overflow-hidden" />!
+				Hello, this is <span id="blog-title-text" class="px-2 inline-flex items-center gap-1 transition-all duration-500 ease-in-out special-font relative overflow-hidden text-transparent bg-clip-text" />!
 			</p>
 		</main>
 		<Footer />
@@ -44,8 +43,75 @@ import Layout from '@/layouts/Layout.astro';
 	}
 	
 	#blog-title-text {
-		display: inline-block;
-		will-change: transform, opacity;
+		display: inline-flex;
+		align-items: center;
+		gap: 0.2rem;
+		padding-inline: 0.4rem;
+		letter-spacing: -0.02em;
+		background-image:
+			radial-gradient(circle at 0% 0%, rgba(255, 255, 255, 0.85), transparent 42%),
+			radial-gradient(circle at 80% 0%, rgba(224, 247, 250, 0.6), transparent 45%),
+			conic-gradient(from 180deg at 50% 50%, #5efce8, #736efe, #ff5f6d, #ffc371, #5efce8);
+		background-size: 180% 180%;
+		color: transparent;
+		-webkit-text-fill-color: transparent;
+		-webkit-background-clip: text;
+		background-clip: text;
+		
+		filter: drop-shadow(0 18px 28px rgba(196, 219, 229, 0.35));
+		will-change: transform, opacity, background-position;
+		animation: prismShift 9s ease-in-out infinite alternate;
+	}
+
+	#blog-title-text::after {
+		content: '';
+		position: absolute;
+		inset: 25% auto auto 12%;
+		width: 68%;
+		height: 35%;
+		border-radius: 9999px;
+		/* background: rgba(255, 255, 255, 0.55); */
+		filter: blur(18px);
+		opacity: 0.8;
+		pointer-events: none;
+		mix-blend-mode: screen;
+		animation: sparklePulse 4s ease-in-out infinite alternate;
+	}
+
+	@media (prefers-color-scheme: dark) {
+		#blog-title-text {
+			background-image:
+				radial-gradient(circle at 5% 15%, rgba(56, 189, 248, 0.45), transparent 48%),
+				radial-gradient(circle at 88% 5%, rgba(161, 98, 255, 0.5), transparent 42%),
+				conic-gradient(from 200deg at 50% 50%, #0ff0b3, #0367d3, #8d4efc, #ff7eb6, #0ff0b3);
+			/* text-shadow: 0 12px 18px rgba(15, 23, 42, 0.65); */
+			/* filter: drop-shadow(0 18px 28px rgba(16, 185, 129, 0.45)); */
+		}
+
+	
+	}
+
+	@keyframes prismShift {
+		0% {
+			background-position: 0% 50%;
+		}
+		50% {
+			background-position: 100% 50%;
+		}
+		100% {
+			background-position: 0% 50%;
+		}
+	}
+
+	@keyframes sparklePulse {
+		0% {
+			opacity: 0.45;
+			transform: translateY(0) scaleX(0.85);
+		}
+		100% {
+			opacity: 0.95;
+			transform: translateY(-15%) scaleX(1.15);
+		}
 	}
 </style>
 
@@ -59,7 +125,7 @@ import Layout from '@/layouts/Layout.astro';
 			{ text: 'Le Blog de Loutre 🇫🇷', lang: 'fr' } ,   // 프랑스어
 			{ text: 'Sjøoter’s Blog 🇳🇴', lang: 'no' } ,    // 노르웨이어
 		];
-		const INTERVAL_DURATION = 2000; // 2초
+		const INTERVAL_DURATION = 10000; // 10초
 		
 		if (!window.__siteTitleState) {
 			window.__siteTitleState = {
