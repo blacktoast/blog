@@ -15,11 +15,24 @@ import {
   loadNoteDocument,
   parseFrontmatter,
   type FrontmatterRecord,
-} from "./parse-blog.js";
-import { type PathConfig, loadPathConfig } from "./get-path.js";
-import { IS_DEBUG_MODE } from "./constants/debug.js";
-import { processEmbeddedImages } from "./parse-image.js";
-import { synchronizeLogFiles } from "./parse-log.js";
+  extractDate,
+  extractPublished,
+  extractTags,
+  extractTitle,
+  buildReferenceIds,
+  normalizeReferenceId,
+  toSlug,
+  formatDate,
+  ensureTrailingNewline,
+  extractDescription,
+  formatYamlString,
+  trimLeadingBlankLines,
+  truncate,
+} from "./utils";
+import { type PathConfig, loadPathConfig } from "./get-path.ts";
+import { IS_DEBUG_MODE } from "./constants/debug.ts";
+import { processEmbeddedImages } from "./parse-image.ts";
+import { synchronizeLogFiles } from "./parse-log.ts";
 
 let syncLogSequence = 0;
 
@@ -78,41 +91,6 @@ function buildBlogFrontmatter(note: NoteDocument): BlogFrontmatter {
   };
 }
 
-function extractDescription(body: string): string {
-  const lines = body.split(/\r?\n/);
-  const paragraphs: string[] = [];
-  let buffer: string[] = [];
-  for (const line of lines) {
-    const trimmedLine = line.trim();
-    if (trimmedLine.length === 0) {
-      if (buffer.length > 0) {
-        paragraphs.push(buffer.join(" "));
-        buffer = [];
-      }
-      continue;
-    }
-    if (trimmedLine.startsWith("#")) {
-      continue;
-    }
-    buffer.push(trimmedLine);
-  }
-  if (buffer.length > 0) {
-    paragraphs.push(buffer.join(" "));
-  }
-  const firstParagraph = paragraphs.find((paragraph) => paragraph.length > 0);
-  if (!firstParagraph) {
-    return "No description available.";
-  }
-  return truncate(firstParagraph, 180);
-}
-
-function truncate(value: string, maxLength: number): string {
-  if (value.length <= maxLength) {
-    return value;
-  }
-  return `${value.slice(0, maxLength - 3)}...`;
-}
-
 function serializeBlogFrontmatter(frontmatter: BlogFrontmatter): string {
   const lines: string[] = ["---"];
   lines.push(`title: ${formatYamlString(frontmatter.title)}`);
@@ -129,52 +107,6 @@ function serializeBlogFrontmatter(frontmatter: BlogFrontmatter): string {
   }
   lines.push("---");
   return lines.join("\n");
-}
-
-function formatYamlString(value: string): string {
-  const escaped = value.replace(/'/g, "''");
-  return `'${escaped}'`;
-}
-
-function formatDate(date: Date): string {
-  const year = date.getFullYear();
-  const month = `${date.getMonth() + 1}`.padStart(2, "0");
-  const day = `${date.getDate()}`.padStart(2, "0");
-  return `'${year}-${month}-${day}'`;
-}
-
-function trimLeadingBlankLines(value: string): string {
-  return value.replace(/^\s*\n+/, "");
-}
-
-function ensureTrailingNewline(value: string): string {
-  return value.endsWith("\n") ? value : `${value}\n`;
-}
-
-function normalizeReferenceId(rawValue: string): string {
-  const trimmed = rawValue.trim();
-  if (trimmed.length === 0) {
-    return "";
-  }
-  const withoutAlias = trimmed.split("|")[0];
-  const withoutExtension = withoutAlias.replace(/\.[^/.]+$/, "");
-  const normalizedSeparators = withoutExtension.replace(/\\/g, "/");
-  const collapsedWhitespace = normalizedSeparators.replace(/\s+/g, " ");
-  return collapsedWhitespace.toLowerCase();
-}
-
-function toSlug(input: string): string {
-  const normalized = input.trim();
-  if (normalized.length === 0) {
-    return "note";
-  }
-  const sanitized = normalized
-    .normalize("NFKD")
-    .replace(/[^\p{Letter}\p{Number}]+/gu, "-")
-    .replace(/-+/g, "-")
-    .replace(/^-|-$/g, "");
-  const slug = sanitized.length === 0 ? "note" : sanitized;
-  return slug.toLowerCase();
 }
 
 async function lookupNoteInRoot(
@@ -208,7 +140,7 @@ async function findNoteByReferenceId(
     for (const filePath of files) {
       const rawContent = await readFile(filePath, "utf8");
       const { frontmatter, body } = parseFrontmatter(rawContent);
-      const title = extractTitleFromFrontmatter(frontmatter, body, filePath);
+      const title = extractTitle(frontmatter, filePath);
       const normalizedTitle = normalizeReferenceId(title);
       const normalizedPath = normalizeReferenceId(
         basename(filePath, extname(filePath))
@@ -225,7 +157,7 @@ async function findNoteByReferenceId(
         normalizedTitle === slugReferenceId ||
         normalizedPath === slugReferenceId
       ) {
-        const published = extractPublishedFromFrontmatter(frontmatter);
+        const published = extractPublished(frontmatter);
         return {
           status: "found",
           published,
@@ -238,45 +170,6 @@ async function findNoteByReferenceId(
     console.warn(`[lookup] Error searching for ${referenceId}:`, error);
   }
   return { status: "not-found" };
-}
-
-function extractTitleFromFrontmatter(
-  frontmatter: FrontmatterRecord,
-  body: string,
-  filePath: string
-): string {
-  const titleValue = getFrontmatterValue(frontmatter, "title");
-  if (typeof titleValue === "string" && titleValue.trim().length > 0) {
-    return titleValue.trim();
-  }
-  return basename(filePath, extname(filePath)).trim();
-}
-
-function getFrontmatterValue(
-  record: FrontmatterRecord,
-  key: string
-): string | boolean | string[] | null | undefined {
-  const target = key.toLowerCase();
-  for (const entryKey of Object.keys(record)) {
-    if (entryKey.toLowerCase() === target) {
-      return record[entryKey];
-    }
-  }
-  return undefined;
-}
-
-function extractPublishedFromFrontmatter(
-  frontmatter: FrontmatterRecord
-): boolean {
-  const value = getFrontmatterValue(frontmatter, "published");
-  if (typeof value === "boolean") {
-    return value;
-  }
-  if (typeof value === "string") {
-    const normalized = value.trim().toLowerCase();
-    return normalized === "true" || normalized === "yes" || normalized === "1";
-  }
-  return false;
 }
 
 function isPathInDirectory(filePath: string, directory: string): boolean {
@@ -440,7 +333,10 @@ async function synchronizePublishedNotes(
     const rewrittenBody = ensureTrailingNewline(
       trimLeadingBlankLines(transformedBody)
     );
-    const documentContent = `${serializeBlogFrontmatter(blogFrontmatter)}\n${rewrittenBody}`;
+    
+    const bodyWithToc = `## Table of contents\n\n${rewrittenBody}`;
+    const documentContent = `${serializeBlogFrontmatter(blogFrontmatter)}\n${bodyWithToc}`;
+
     await writeFile(destinationPath, documentContent, "utf8");
     logSyncStep("synchronizePublishedNotes:note-written", {
       notePath: note.sourcePath,
@@ -470,16 +366,16 @@ async function discoverExistingBlogEntries(
   for (const filePath of existingPaths) {
     const rawContent = await readFile(filePath, "utf8");
     const { frontmatter, body } = parseFrontmatter(rawContent);
-    const title = extractTitleFromFrontmatter(frontmatter, body, filePath);
-    const tags = extractTagsFromFrontmatter(frontmatter);
+    const title = extractTitle(frontmatter, filePath);
+    const tags = extractTags(frontmatter);
     const created =
-      extractDateFromFrontmatter(frontmatter, "pubDate") ??
-      extractDateFromFrontmatter(frontmatter, "created");
+      extractDate(frontmatter, "pubDate") ??
+      extractDate(frontmatter, "created");
     const modified =
-      extractDateFromFrontmatter(frontmatter, "updatedDate") ??
-      extractDateFromFrontmatter(frontmatter, "modified");
+      extractDate(frontmatter, "updatedDate") ??
+      extractDate(frontmatter, "modified");
     const slug = basename(filePath, extname(filePath));
-    const referenceIds = buildReferenceIds(title, slug, filePath);
+    const referenceIds = buildReferenceIds(title, filePath, slug);
     const metadata: NoteMetadata = {
       title,
       slug,
@@ -496,48 +392,6 @@ async function discoverExistingBlogEntries(
     });
   }
   return entries;
-}
-
-function extractTagsFromFrontmatter(
-  frontmatter: FrontmatterRecord
-): readonly string[] {
-  const rawTags = getFrontmatterValue(frontmatter, "tags");
-  if (Array.isArray(rawTags)) {
-    return rawTags.map((tag) => tag.trim()).filter((tag) => tag.length > 0);
-  }
-  if (typeof rawTags === "string" && rawTags.trim().length > 0) {
-    return [rawTags.trim()];
-  }
-  return [];
-}
-
-function extractDateFromFrontmatter(
-  frontmatter: FrontmatterRecord,
-  key: string
-): Date | undefined {
-  const rawValue = getFrontmatterValue(frontmatter, key);
-  if (typeof rawValue === "string" && rawValue.trim().length > 0) {
-    const parsed = new Date(rawValue);
-    if (!Number.isNaN(parsed.getTime())) {
-      return parsed;
-    }
-  }
-  return undefined;
-}
-
-function buildReferenceIds(
-  title: string,
-  slug: string,
-  filePath: string
-): readonly string[] {
-  const ids = new Set<string>();
-  const baseName = basename(filePath, extname(filePath));
-  ids.add(normalizeReferenceId(title));
-  ids.add(normalizeReferenceId(slug));
-  ids.add(normalizeReferenceId(baseName));
-  ids.add(toSlug(title));
-  ids.add(toSlug(baseName));
-  return Array.from(ids).filter((value) => value.length > 0);
 }
 
 function buildLinkResolutionContext(

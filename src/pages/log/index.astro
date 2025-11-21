@@ -1,0 +1,58 @@
+---
+import BaseHead from '../../components/BaseHead.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import LogEntry from '../../components/LogEntry.astro';
+import { SITE_TITLE, SITE_DESCRIPTION } from '../../constants';
+import { getCollection } from 'astro:content';
+import Layout from '@/layouts/Layout.astro';
+
+const logs = (await getCollection('log')).sort(
+	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+);
+
+// Show logs for the latest available month
+const latestLog = logs[0];
+const recentLogs = latestLog 
+	? logs.filter((log) => 
+		log.data.pubDate.getFullYear() === latestLog.data.pubDate.getFullYear() && 
+		log.data.pubDate.getMonth() === latestLog.data.pubDate.getMonth()
+	  )
+	: [];
+
+const currentDisplayDate = latestLog ? latestLog.data.pubDate : new Date();
+const displayMonth = currentDisplayDate.toLocaleString('default', { month: 'long' });
+const displayYear = currentDisplayDate.getFullYear();
+
+const years = [...new Set(logs.map((log) => log.data.pubDate.getFullYear()))].sort((a, b) => b - a);
+---
+
+<Layout title={`일지 - ${displayMonth} ${displayYear}`} description={SITE_DESCRIPTION}>
+		<Header />
+		<main class="w-full max-w-app mx-auto px-4">
+			<section class="mb-12">
+				<h1 class="text-3xl font-bold mb-8">{displayMonth} {displayYear}</h1>
+				<div class="space-y-0">
+					{
+						recentLogs.map((log) => (
+							<LogEntry log={log} />
+						))
+					}
+				</div>
+			</section>
+
+			<section class="border-t border-border pt-8">
+				<h2 class="text-2xl font-bold mb-4">Archive</h2>
+				<div class="flex gap-4 flex-wrap">
+					{
+						years.map((year) => (
+							<a href={`/log/${year}`} class="px-4 py-2 bg-secondary rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors">
+								{year}
+							</a>
+						))
+					}
+				</div>
+			</section>
+		</main>
+		<Footer />
+</Layout>

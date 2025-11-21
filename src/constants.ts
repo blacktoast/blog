@@ -8,7 +8,7 @@ import IconLinkedin from "@/assets/icons/IconLinkedin.svg";
 import { SITE } from "@/config";
 
 export const SITE_TITLE = "Astr";
-export const SITE_DESCRIPTION = "Welcome to my website!";
+export const SITE_DESCRIPTION = "Retto's blog";
 
 interface Social {
   name: string;

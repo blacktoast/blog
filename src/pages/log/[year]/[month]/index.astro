@@ -1,0 +1,60 @@
+---
+import BaseHead from '../../../../components/BaseHead.astro';
+import Header from '../../../../components/Header.astro';
+import Footer from '../../../../components/Footer.astro';
+import LogEntry from '../../../../components/LogEntry.astro';
+import { SITE_TITLE, SITE_DESCRIPTION } from '../../../../constants';
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+	const logs = await getCollection('log');
+	const years = [...new Set(logs.map((log) => log.data.pubDate.getFullYear()))];
+	
+	return years.flatMap((year) => {
+		const yearLogs = logs.filter((log) => log.data.pubDate.getFullYear() === year);
+		const months = [...new Set(yearLogs.map((log) => log.data.pubDate.getMonth()))];
+		
+		return months.map((month) => ({
+			params: { year: year.toString(), month: (month + 1).toString() },
+			props: { year, month },
+		}));
+	});
+}
+
+const { year, month } = Astro.props;
+const logs = (await getCollection('log'))
+	.filter((log) => 
+		log.data.pubDate.getFullYear() === year && 
+		log.data.pubDate.getMonth() === month
+	)
+	.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+const monthName = new Date(year, month).toLocaleString('default', { month: 'long' });
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<BaseHead title={`Log ${monthName} ${year} | ${SITE_TITLE}`} description={SITE_DESCRIPTION} />
+	</head>
+	<body>
+		<Header />
+		<main class="w-full max-w-app mx-auto px-4">
+			<section class="mb-12">
+				<div class="flex items-center gap-4 mb-8">
+					<a href={`/log/${year}`} class="text-muted-foreground hover:text-foreground transition-colors">← Back to {year}</a>
+					<h1 class="text-3xl font-bold">{monthName} {year}</h1>
+				</div>
+				
+				<div class="space-y-0">
+					{
+						logs.map((log) => (
+							<LogEntry log={log} />
+						))
+					}
+				</div>
+			</section>
+		</main>
+		<Footer />
+	</body>
+</html>

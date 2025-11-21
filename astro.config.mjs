@@ -18,10 +18,12 @@ import { SITE } from "./src/config.ts";
 
 import tailwindcss from "@tailwindcss/vite";
 
+import icon from "astro-icon";
+
 // https://astro.build/config
 export default defineConfig({
   site: SITE.url,
-  integrations: [mdx(), sitemap()],
+  integrations: [mdx(), sitemap(), icon()],
   adapter: cloudflare(),
 
   markdown: {

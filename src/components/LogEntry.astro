@@ -1,0 +1,170 @@
+---
+import { Icon } from 'astro-icon/components';
+import FormattedDate from './FormattedDate.astro';
+import { type CollectionEntry, render } from 'astro:content';
+
+interface Props {
+	log: CollectionEntry<'log'>;
+}
+
+const { log } = Astro.props;
+const { Content } = await render(log);
+
+type WeatherEntry = {
+	time: string;
+	condition: string;
+	temp?: string;
+};
+
+type ParsedWeather = {
+	country?: string;
+	entries: WeatherEntry[];
+};
+
+const WEATHER_TIME_ICON: Record<string, string> = {
+	morning: 'lucide:clock-7',
+	noon: 'lucide:clock-2',
+	evening: 'lucide:clock-7',
+	night: 'lucide:clock-11',
+};
+
+const WEATHER_ICON: Record<string, string> = {
+	Cloud: 'lucide:cloud',
+	Sunny: 'lucide:sun',
+	Clear: 'lucide:sun-moon',
+	Overcast: 'lucide:cloud-fog',
+	Rain: 'lucide:cloud-rain',
+	Thunderstorm: 'lucide:cloud-lightning',
+	Snow: 'lucide:cloud-snow',
+};
+
+type WEATHER_TIME = 'morning' | 'noon' | 'evening' | 'night';
+
+const WEATHER_TIME_COLOR: Record<WEATHER_TIME, string> = {
+	morning: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-200 border-yellow-200 dark:border-yellow-800',
+	noon: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-200 border-orange-200 dark:border-orange-800',
+	evening: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-200 border-indigo-200 dark:border-indigo-800',
+	night: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-200 border-purple-200 dark:border-purple-800',
+};
+
+const parseWeather = (rawValue: unknown): ParsedWeather | null => {
+	if (typeof rawValue !== 'string') return null;
+	const raw = rawValue.trim();
+	if (!raw) return null;
+
+	let country: string | undefined;
+	let body = raw;
+	const countryMatch = raw.match(/^\[?([^\]:]+)\]?\s*:\s*(.+)$/);
+	if (countryMatch) {
+		country = countryMatch[1].trim();
+		body = countryMatch[2].trim();
+	}
+
+	const entries = body
+		.split('|')
+		.map((segment) => segment.trim())
+		.filter(Boolean)
+		.map<WeatherEntry | null>((segment) => {
+			const timeMatch = segment.match(/^\[?([^\]-]+)\]?\s*-?\s*(.+)$/);
+			if (!timeMatch) return null;
+			const time = timeMatch[1].trim().toLowerCase();
+			const rest = timeMatch[2].trim();
+			const tempMatch = rest.match(/([+-]?\d.*)$/);
+			const temp = tempMatch ? tempMatch[1].trim() : undefined;
+			const condition = tempMatch
+				? rest.slice(0, tempMatch.index ?? rest.length).trim()
+				: rest.trim();
+			if (!time || !condition) return null;
+			return { time, condition, temp };
+		})
+		.filter((entry): entry is WeatherEntry => entry !== null);
+
+	if (entries.length === 0) return null;
+	return { country, entries };
+};
+
+const weather = parseWeather(log.data.weather);
+const focusEntries = weather?.entries.filter((entry) =>
+	['morning', 'noon', 'evening'].includes(entry.time)
+);
+const displayEntries =
+	focusEntries && focusEntries.length > 0
+		? focusEntries
+		: weather?.entries ?? [];
+const hasWeather = displayEntries.length > 0;
+---
+
+<article class="relative sm:pl-4 md:pl-8 pb-12 border-l-0 sm:border-l-2 border-border last:border-l-0 last:pb-0">
+	<div class="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-accent border-4 border-background"></div>
+
+	<div class="flex items-center justify-between mb-4 pl-4 sm:pl-0">
+		<div class="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+			<FormattedDate date={log.data.pubDate} />
+			{hasWeather && (
+				<>
+					<div class="flex flex-wrap items-center gap-2">
+						{displayEntries.map((entry) => {
+							const color = WEATHER_TIME_COLOR[entry.time as WEATHER_TIME];
+
+							return (
+								<div
+									class={`
+                    weather-chip
+                    ${entry.time}
+                    inline-flex items-center justify-center rounded-full border px-2 py-0.5 text-xs font-medium shadow-sm
+                    ${color}
+                  `}
+								>
+									<Icon
+										name={WEATHER_TIME_ICON[entry.time]}
+										class="w-2 h-2 mr-1"
+									/>
+									<Icon
+										name={WEATHER_ICON[entry.condition] ?? 'lucide:cloud'}
+										class="w-3 h-3 mr-1"
+									/>
+									{entry.temp && (
+										<span class="weather-temp font-normal text-[0.5rem] opacity-60 sm:font-medium sm:opacity-80 sm:text-xs">
+											{entry.temp}
+										</span>
+									)}
+								</div>
+							);
+						})}
+					</div>
+				</>
+			)}
+		</div>
+	</div>
+
+	<div class="app-prose dark:prose-invert max-w-none ps-1 pe-1 sm:px-0">
+		<Content />
+	</div>
+</article>
+
+<style>
+	/* Custom wavy line implementation can be added here if needed, 
+	   currently using a clean timeline style as a base */
+
+	.weather-chip.noon {
+		display: none;
+	}
+	@media (max-width: 640px) {
+		/* hide evening chip on mobile to keep layout tight */
+		.weather-chip.evening {
+			display: none;
+		}
+		.weather-chip.morning {
+			display: none;
+		}
+		.weather-chip.noon {
+			display: flex;
+		}
+
+		/* keep condition visible, hide duplicated time/temp when mobile badge is shown */
+		.weather-chip.morning .weather-time
+		 {
+			display: none;
+		}
+	}
+</style>

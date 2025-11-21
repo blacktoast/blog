@@ -1,0 +1,57 @@
+---
+import BaseHead from '../../../components/BaseHead.astro';
+import Header from '../../../components/Header.astro';
+import Footer from '../../../components/Footer.astro';
+import { SITE_TITLE, SITE_DESCRIPTION } from '../../../constants';
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+	const logs = await getCollection('log');
+	const years = [...new Set(logs.map((log) => log.data.pubDate.getFullYear()))];
+	return years.map((year) => ({
+		params: { year: year.toString() },
+		props: { year },
+	}));
+}
+
+const { year } = Astro.props;
+const logs = (await getCollection('log')).filter((log) => log.data.pubDate.getFullYear() === year);
+const months = [...new Set(logs.map((log) => log.data.pubDate.getMonth()))].sort((a, b) => b - a);
+
+const monthNames = [
+	"January", "February", "March", "April", "May", "June",
+	"July", "August", "September", "October", "November", "December"
+];
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<BaseHead title={`Log ${year} | ${SITE_TITLE}`} description={SITE_DESCRIPTION} />
+	</head>
+	<body>
+		<Header />
+		<main class="w-full max-w-app mx-auto px-4">
+			<section class="mb-12">
+				<div class="flex items-center gap-4 mb-8">
+					<a href="/log" class="text-muted-foreground hover:text-foreground transition-colors">← Back to Logs</a>
+					<h1 class="text-3xl font-bold">{year} Archive</h1>
+				</div>
+				
+				<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+					{
+						months.map((month) => (
+							<a href={`/log/${year}/${month + 1}`} class="block p-6 bg-card border border-border rounded-lg hover:border-accent transition-colors group">
+								<h2 class="text-xl font-bold mb-2 group-hover:text-accent transition-colors">{monthNames[month]}</h2>
+								<p class="text-muted-foreground">
+									{logs.filter(l => l.data.pubDate.getMonth() === month).length} entries
+								</p>
+							</a>
+						))
+					}
+				</div>
+			</section>
+		</main>
+		<Footer />
+	</body>
+</html>
