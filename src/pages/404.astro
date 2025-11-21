@@ -4,13 +4,13 @@ import Footer from "@/components/Footer.astro";
 import Layout from "@/layouts/Layout.astro";
 import lostOtterImage from "@/assets/404.webp";
 
-const pageTitle = "길을 잃은 조개를 찾는 중입니다";
+const pageTitle = "조개를 찾는 중입니다";
 const pageDescription = "멍청한 해달이 조개를 잃어버려서 페이지를 찾지 못했어요.";
 ---
 
 <Layout title={pageTitle} description={pageDescription}>
 	<Header />
-	<main class="flex min-h-[60vh] flex-col items-center justify-center gap-6 text-center sm:gap-10">
+	<main class="flex flex-col items-center justify-center gap-6 text-center sm:gap-10">
 		<h1 class="text-3xl font-bold text-foreground sm:text-5xl">
 			해달이 조개를 잃어버렸어요
 		</h1>
