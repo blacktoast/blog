@@ -1,0 +1,38 @@
+---
+import Header from "@/components/Header.astro";
+import Footer from "@/components/Footer.astro";
+import Layout from "@/layouts/Layout.astro";
+import lostOtterImage from "@/assets/404.webp";
+
+const pageTitle = "길을 잃은 조개를 찾는 중입니다";
+const pageDescription = "멍청한 해달이 조개를 잃어버려서 페이지를 찾지 못했어요.";
+---
+
+<Layout title={pageTitle} description={pageDescription}>
+	<Header />
+	<main class="flex min-h-[60vh] flex-col items-center justify-center gap-6 text-center sm:gap-10">
+		<h1 class="text-3xl font-bold text-foreground sm:text-5xl">
+			해달이 조개를 잃어버렸어요
+		</h1>
+		<p class="max-w-md text-base text-muted-foreground sm:text-lg">
+			조개를 찾느라 정신이 없어서 이 페이지가 어디 있는지 잊어버렸어요.
+			조금만 더 도와줄 수 있을까요?
+		</p>
+			<img
+				src={lostOtterImage.src}
+				width={lostOtterImage.width}
+				height={lostOtterImage.height}
+				alt="해달이 조개를 잃어버리고 당황한 모습의 삽화"
+				class="h-auto w-60 rounded-2xl border border-border shadow-lg sm:w-72 m-0 mb-8"
+				loading="lazy"
+			/>
+		<a
+			href="/"
+			class="inline-flex items-center justify-center rounded-full border border-transparent bg-foreground px-6 py-3 text-sm font-semibold text-background shadow transition hover:-translate-y-0.5 hover:bg-foreground/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
+		>
+			집으로 가기
+		</a>
+	</main>
+	<Footer />
+</Layout>
+
