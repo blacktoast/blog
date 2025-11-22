@@ -5,12 +5,12 @@ import { Icon } from 'astro-icon/components';
 ---
 
 <header class="m-0 px-4 bg-background/80 dark:bg-background/30 border-b border-border text-foreground mb-4">
-	<nav class="mx-auto max-w-app px-4 flex items-center justify-between gap-4 flex-wrap">
-			<a href="/" class="no-underline text-inherit">
-				<img src={HaedalImg.src} alt="Blog" class="w-8 h-8  border-none m-0 p-0" />
-			</a>
-		
-		<div class="flex items-center flex-wrap gap-2">
+	<nav class="mx-auto max-w-app px-0 sm:px-4 flex items-center justify-between gap-4 flex-wrap">
+		<a href="/" class="no-underline text-inherit">
+			<img src={HaedalImg.src} alt="Blog" class="w-6 h-6 sm:w-8 sm:h-8 border-none m-0 p-0" />
+		</a>
+
+		<div class="flex items-center flex-wrap gap-2 max-[720px]:hidden">
 			<HeaderLink href="/" class="py-4 px-2 text-inherit border-b-4 border-transparent no-underline transition-colors duration-200 hover:text-accent focus-visible:text-accent  [&.active]:text-accent [&.active]:border-b-accent">Home</HeaderLink>
 			<HeaderLink href="/blog" class="py-4 px-2 text-inherit border-b-4 border-transparent no-underline transition-colors duration-200 hover:text-accent focus-visible:text-accent [&.active]:text-accent [&.active]:border-b-accent">Blog</HeaderLink>
 			<HeaderLink href="/about" class="py-4 px-2 text-inherit border-b-4 border-transparent no-underline transition-colors duration-200 hover:text-accent focus-visible:text-accent [&.active]:text-accent [&.active]:border-b-accent">About</HeaderLink>
@@ -19,19 +19,34 @@ import { Icon } from 'astro-icon/components';
 			</a>
 		</div>
 
-		<div class="flex items-center gap-3">
+		<div class="flex items-center gap-1.5">
 			<button
 				id="theme-btn"
 				type="button"
-				class="relative grid place-items-center w-10 h-10 p-0 rounded-full border border-border bg-transparent text-inherit cursor-pointer transition-colors duration-200 hover:border-accent hover:text-accent focus-visible:border-accent focus-visible:text-accent focus-visible:outline-none"
+				class="relative grid place-items-center w-10 h-10 p-0 rounded-full bg-transparent text-inherit cursor-pointer transition-colors duration-200 hover:text-accent focus-visible:text-accent focus-visible:outline-none"
 				title="Toggle color scheme"
 				aria-label="auto"
 				aria-live="polite"
 			>
-				<span class="absolute text-xl leading-none transition-all duration-200 opacity-100 scale-100 dark:opacity-0 dark:scale-[0.6]" aria-hidden="true">☀️</span>
-				<span class="absolute text-xl leading-none transition-all duration-200 opacity-0 scale-[0.6] dark:opacity-100 dark:scale-100" aria-hidden="true">🌙</span>
+				<Icon name="lucide:sun" class="absolute w-6 h-6 transition-all duration-200 opacity-100 scale-100 dark:opacity-0 dark:scale-[0.6]" aria-hidden="true" />
+				<Icon name="lucide:moon" class="absolute w-6 h-6 transition-all duration-200 opacity-0 scale-[0.6] dark:opacity-100 dark:scale-100" aria-hidden="true" />
 				<span class="sr-only">Toggle color scheme</span>
 			</button>
+
+			<details id="mobile-menu" class="relative hidden max-[720px]:block">
+				<summary class="list-none marker:hidden grid place-items-center w-10 h-10 rounded-full bg-transparent text-inherit cursor-pointer transition-all duration-200 hover:text-accent focus-visible:text-accent focus-visible:outline-none">
+					<Icon name="lucide:menu" class="w-6 h-6 transition-opacity duration-200" />
+					<span class="sr-only">메뉴 열기</span>
+				</summary>
+				<div class="absolute right-0 mt-2 w-52 rounded-xl border border-border bg-background/95 dark:bg-background/90 backdrop-blur shadow-lg p-2 flex flex-col gap-1 z-50">
+					<HeaderLink href="/" class="py-2 px-3 rounded-lg text-inherit no-underline transition-colors duration-200 hover:text-accent focus-visible:text-accent">Home</HeaderLink>
+					<HeaderLink href="/blog" class="py-2 px-3 rounded-lg text-inherit no-underline transition-colors duration-200 hover:text-accent focus-visible:text-accent">Blog</HeaderLink>
+					<!-- <HeaderLink href="/about" class="py-2 px-3 rounded-lg text-inherit no-underline transition-colors duration-200 hover:text-accent focus-visible:text-accent">About</HeaderLink> -->
+					<a href="/log" class="py-2 px-3 rounded-lg text-inherit no-underline transition-colors duration-200 hover:text-accent focus-visible:text-accent">Log</a>
+				</div>
+			</details>
+
+	
 
 			<div class="flex items-center gap-3 max-[720px]:hidden">
 				<a href="https://m.webtoo.ls/@astro" target="_blank" class="flex no-underline text-inherit hover:text-accent focus-visible:text-accent">
@@ -65,4 +80,32 @@ import { Icon } from 'astro-icon/components';
 		</div>
 	</nav>
 </header>
+
+<style>
+	#mobile-menu[open] > summary {
+		opacity: 0.5;
+	}
+</style>
+
+<script>
+	(function() {
+		'use strict';
+		if ((window as any).__mobileMenuListenerAttached) return;
+		(window as any).__mobileMenuListenerAttached = true;
+		
+		document.addEventListener('click', function(event: MouseEvent) {
+			if (!event.target) return;
+			
+			const mobileMenu = document.getElementById('mobile-menu');
+			if (!mobileMenu || !mobileMenu.hasAttribute('open')) return;
+			
+			const target = event.target as Node;
+			const isClickInside = mobileMenu.contains(target);
+			if (!isClickInside) {
+				mobileMenu.removeAttribute('open');
+			}
+		});
+	})();
+</script>
+
 
