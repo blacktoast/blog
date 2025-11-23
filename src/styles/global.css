@@ -17,6 +17,12 @@
   font-style: normal;
 }
 
+@font-face {
+  font-family: "suit-font";
+  src: url("/fonts/SUIT-Variable.woff2") format("woff2");
+  font-display: swap;
+}
+
 :root,
 html[data-theme="light"] {
   /* Summer Sea Theme */

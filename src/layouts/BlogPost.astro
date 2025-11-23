@@ -5,6 +5,7 @@ import Footer from '../components/Footer.astro';
 import FormattedDate from '../components/FormattedDate.astro';
 import Header from '../components/Header.astro';
 import Layout from '@/layouts/Layout.astro';
+import { Icon } from 'astro-icon/components';
 
 type Props = CollectionEntry<'blog'>['data'];
 
@@ -20,23 +21,23 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 >
 	<Header />
 	<main >
-		<article class="app-prose">
-			<div class="hero-image">
-				{heroImage && <Image width={1020} height={510} src={heroImage} alt="" />}
-			</div>
+		<article class="app-prose px-2 sm:px-0 mt-0 sm:mt-4">
 			<div>
 				<div class="title">
+					<h1>{title}</h1>
 					<div class="date">
-						<FormattedDate date={pubDate} />
+						<div class="flex items-center gap-1 text-gray-400">	
+							<Icon name="lucide:calendar" class="w-4 h-4 inline-block mr-1" /> 
+							<FormattedDate date={pubDate} />
+						</div>
 						{
 							updatedDate && (
-								<div class="last-updated-on">
+								<div class="flex items-center gap-1 text-gray-300">
 									Last updated on <FormattedDate date={updatedDate} />
 								</div>
 							)
 						}
 					</div>
-					<h1>{title}</h1>
 					<hr />
 				</div>
 				<slot />
@@ -93,20 +94,17 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 </script>
 
 <style>
-	article {
+		.hero-image {
+		width: 100%;
+	}
+
+ article {
 		display: flex;
 		flex-direction: column;
 		gap: 2rem;
 	}
-	.hero-image {
-		width: 100%;
-	}
-	.hero-image img {
-		display: block;
-		margin: 0 auto;
-		border-radius: 12px;
-		border: 1px solid var(--color-border);
-	}
+
+/*	
 	.title {
 		margin-bottom: 1em;
 		padding: 1em 0;
@@ -126,5 +124,5 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 	}
 	hr {
 		border-color: var(--color-border);
-	}
+	} */
 </style>

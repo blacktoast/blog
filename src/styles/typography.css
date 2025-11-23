@@ -4,7 +4,10 @@
   /* ===== Override default Tailwind Typography styles ===== */
   .app-prose {
     @apply prose max-w-none;
+    font-family: "suit-font", sans-serif;
 
+    letter-spacing: 0.08em;
+    word-spacing: -0.01em;
     /* Typography CSS 변수를 프로젝트 테마에 맞게 설정 */
     --tw-prose-body: var(--color-foreground);
     --tw-prose-headings: var(--color-foreground);
@@ -46,6 +49,10 @@
     table,
     code {
       @apply text-foreground;
+    }
+
+    p {
+      line-height: 2;
     }
 
     a {
