@@ -8,11 +8,11 @@ import Layout from '@/layouts/Layout.astro';
 	<Header />
 		<main class="mt-4"> 
 
-			<h1 class="text-4xl max-sm:px-4 font-bold font-HomeHello mb-8">hyggelig!</h1>
-			<div class="flex items-center">
-				This is <span id="blog-title-text" class="px-2 inline-flex items-center gap-1 transition-all duration-500 ease-in-out special-font relative overflow-hidden" >
-					<span class="title-text text-transparent bg-clip-text">Retto's Blog</span>
-					<span class="title-flag"/>
+			<h1 class="text-4xl max-sm:px-4 font-bold font-HomeHello mb-12">hyggelig!</h1>
+			<div class="flex items-center blog-name-container">
+				This is <span id="blog-title-text" class="ml-2 text-lg px-2 inline-flex items-center gap-1 transition-all duration-500 ease-in-out special-font relative overflow-hidden" >
+					<span class="title-text text-xl text-transparent bg-clip-text">Retto's Blog</span>
+					<span class="title-flag text-xl"/>
 				</span>
 			</div>
 		</main>
@@ -20,29 +20,34 @@ import Layout from '@/layouts/Layout.astro';
 </Layout>
 
 <style>	
+
+.blog-name-container{
+}
 	.font-HomeHello {
 		font-family: 'HomeHello', sans-serif;
 	}
-	.special-font {
-		font-weight: 900;
+
+	.special-font[data-lang="en"] {
+		font-family: 'en-blog', sans-serif;
+		font-weight: 700;
 	}
-	
-	.special-font[data-lang="it"] {
-		font-family: 'JPLogo', sans-serif;
+
+	.special-font[data-lang="no"] {
+		font-family: 'FRLogo', sans-serif;
 	}
 
 	.special-font[data-lang="ja"] {
-		font-family: 'JPLogo-2', 'JPLogo', sans-serif;
-		font-weight: normal;
+		font-family: 'JPLogo', sans-serif !important;
+		font-weight: 900!;
 	}
 	
 	.special-font[data-lang="zh"] {
-		font-family: 'JPLogo-2', 'JPLogo', sans-serif;
+		font-family: 'JPLogo', sans-serif;
 		font-weight: normal;
 	}
 	
 	.special-font[data-lang="fr"] {
-		font-family: 'JPLogo', sans-serif;
+		font-family: 'FRLogo', sans-serif;
 	}
 	
 	#blog-title-text {

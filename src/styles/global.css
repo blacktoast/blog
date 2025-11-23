@@ -11,6 +11,19 @@
 }
 
 @font-face {
+  font-family: "en-blog";
+  src: url("/fonts/en-blog.woff2") format("woff2");
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "FRLogo";
+  src: url("/fonts/fr.woff2") format("woff2");
+  font-display: swap;
+  font-weight: 400;
+}
+
+@font-face {
   font-family: "HomeHello";
   src: url("/fonts/home-hello-en.woff2") format("woff2");
   font-weight: 500;
