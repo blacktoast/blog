@@ -250,13 +250,10 @@ export async function processEmbeddedImages(
     });
     return note.body;
   }
-  // const assetFolderName =
-  //   createHash("md5").update(note.metadata.slug).digest("hex") +
-  //   "-" +
-  //   new Date().getTime();
-  const assetFolderName = decodeURIComponent(
-    encodeURIComponent(note.metadata.slug).normalize("NFC")
-  );
+  const assetFolderName =
+    createHash("md5").update(note.metadata.slug).digest("hex") +
+    "-" +
+    new Date().getTime();
   const replacements: ImageReplacement[] = [];
   const pendingImages: PendingImage[] = [];
   let index = 1;
