@@ -1,6 +1,6 @@
 ---
 import HeaderLink from './HeaderLink.astro';
-import HaedalImg from '@/assets/haedal-img-2.webp';
+import HaedalImg from '@/assets/haedal-img-2-48.webp';
 import { Icon } from 'astro-icon/components';
 ---
 
@@ -41,7 +41,7 @@ import { Icon } from 'astro-icon/components';
 				<div class="absolute right-0 mt-2 w-52 rounded-xl border border-border bg-background/95 dark:bg-background/90 backdrop-blur shadow-lg p-2 flex flex-col gap-1 z-50">
 					<HeaderLink href="/" class="py-2 px-3 rounded-lg text-inherit no-underline transition-colors duration-200 hover:text-accent focus-visible:text-accent">Home</HeaderLink>
 					<HeaderLink href="/blog" class="py-2 px-3 rounded-lg text-inherit no-underline transition-colors duration-200 hover:text-accent focus-visible:text-accent">Blog</HeaderLink>
-					<!-- <HeaderLink href="/about" class="py-2 px-3 rounded-lg text-inherit no-underline transition-colors duration-200 hover:text-accent focus-visible:text-accent">About</HeaderLink> -->
+					<HeaderLink href="/about" class="py-2 px-3 rounded-lg text-inherit no-underline transition-colors duration-200 hover:text-accent focus-visible:text-accent">About</HeaderLink>
 					<a href="/log" class="py-2 px-3 rounded-lg text-inherit no-underline transition-colors duration-200 hover:text-accent focus-visible:text-accent">Log</a>
 				</div>
 			</details>
@@ -88,24 +88,17 @@ import { Icon } from 'astro-icon/components';
 </style>
 
 <script>
-	(function() {
-		'use strict';
-		if ((window as any).__mobileMenuListenerAttached) return;
-		(window as any).__mobileMenuListenerAttached = true;
+	document.addEventListener('click', function(event: MouseEvent) {
+		if (!event.target) return;
+		const mobileMenu = document.getElementById('mobile-menu');
+		if (!mobileMenu) return;
 		
-		document.addEventListener('click', function(event: MouseEvent) {
-			if (!event.target) return;
-			
-			const mobileMenu = document.getElementById('mobile-menu');
-			if (!mobileMenu || !mobileMenu.hasAttribute('open')) return;
-			
-			const target = event.target as Node;
-			const isClickInside = mobileMenu.contains(target);
-			if (!isClickInside) {
-				mobileMenu.removeAttribute('open');
-			}
-		});
-	})();
+		const target = event.target as Node;
+		const isClickInside = mobileMenu.contains(target);
+		if (!isClickInside && mobileMenu.hasAttribute('open')) {
+			mobileMenu.removeAttribute('open');
+		}
+	});
 </script>
 
 
