@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { mkdir, readdir, rm, stat } from "node:fs/promises";
 import { basename, dirname, extname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -249,7 +250,10 @@ export async function processEmbeddedImages(
     });
     return note.body;
   }
-  const assetFolderName = note.metadata.slug;
+  const assetFolderName =
+    createHash("md5").update(note.metadata.slug).digest("hex") +
+    "-" +
+    new Date().getTime();
   const replacements: ImageReplacement[] = [];
   const pendingImages: PendingImage[] = [];
   let index = 1;
