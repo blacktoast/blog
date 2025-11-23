@@ -1,5 +1,5 @@
 {
-  "main": "worker/index.ts",
+  "main": "dist/_worker.js/index.js",
   "name": "blog",
   "compatibility_date": "2025-11-14",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
