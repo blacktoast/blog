@@ -17,6 +17,17 @@ const blog = defineCollection({
     }),
 });
 
+const pebbles = defineCollection({
+  loader: glob({ base: "./src/content/pebbles", pattern: "**/*.{md,mdx}" }),
+  schema: z.object({
+    title: z.string(),
+    pubDate: z.coerce.date(),
+    updatedDate: z.coerce.date().optional(),
+    description: z.string().optional(),
+    tags: z.array(z.string()).default([]),
+  }),
+});
+
 const log = defineCollection({
   loader: glob({ base: "./src/content/log", pattern: "**/*.{md,mdx}" }),
   schema: z.object({
@@ -28,4 +39,4 @@ const log = defineCollection({
   }),
 });
 
-export const collections = { blog, log };
+export const collections = { blog, pebbles, log };

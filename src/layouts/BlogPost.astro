@@ -7,9 +7,11 @@ import Header from '../components/Header.astro';
 import Layout from '@/layouts/Layout.astro';
 import { Icon } from 'astro-icon/components';
 
-type Props = CollectionEntry<'blog'>['data'];
+type BlogData = CollectionEntry<'blog'>['data'];
+type PebbleData = CollectionEntry<'pebbles'>['data'] & { heroImage?: undefined };
+type Props = BlogData | PebbleData;
 
-const { title, description, pubDate, updatedDate, heroImage, tags } = Astro.props;
+const { title, description, pubDate, updatedDate, heroImage, tags = [] } = Astro.props as Props;
 ---
 
 <Layout
