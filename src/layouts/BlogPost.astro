@@ -9,7 +9,7 @@ import { Icon } from 'astro-icon/components';
 
 type Props = CollectionEntry<'blog'>['data'];
 
-const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
+const { title, description, pubDate, updatedDate, heroImage, tags } = Astro.props;
 ---
 
 <Layout
@@ -37,6 +37,22 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 								</div>
 							)
 						}
+
+					{	
+						tags.length > 0 && (
+						<div class="flex items-center gap-2 mt-3">
+							{
+								tags.map((tag) => (
+									<span class="flex items-center gap-1 bg-muted/10 px-2 py-0.5 rounded text-xs font-medium text-muted-foreground">
+										<Icon name="lucide:hash" class="w-3 h-3" />
+										{tag}
+									</span>
+								))
+							}
+						</div>
+					)
+				}
+
 					</div>
 					<hr />
 				</div>
@@ -103,26 +119,4 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 		flex-direction: column;
 		gap: 2rem;
 	}
-
-/*	
-	.title {
-		margin-bottom: 1em;
-		padding: 1em 0;
-		text-align: center;
-		line-height: 1;
-	}
-	.title h1 {
-		margin: 0 0 0.5em 0;
-	}
-	.date {
-		margin-bottom: 0.5em;
-		color: var(--color-foreground);
-		opacity: 0.85;
-	}
-	.last-updated-on {
-		font-style: italic;
-	}
-	hr {
-		border-color: var(--color-border);
-	} */
 </style>
