@@ -2,6 +2,7 @@
 import Header from '@/components/Header.astro';
 import Footer from '@/components/Footer.astro';
 import Layout from '@/layouts/Layout.astro';
+import { Icon } from 'astro-icon/components';
 
 ---
 <Layout>
@@ -9,20 +10,117 @@ import Layout from '@/layouts/Layout.astro';
 		<main class="mt-4"> 
 
 			<h1 class="text-4xl max-sm:px-4 font-bold font-HomeHello mb-12">hyggelig!</h1>
-			<div class="flex items-center blog-name-container">
+			<div class="flex items-center blog-name-container px-4 sm:px-0">
 				This is <span id="blog-title-text" class="ml-2 text-lg px-2 inline-flex items-center gap-1 transition-all duration-500 ease-in-out special-font relative overflow-hidden" >
 					<span class="title-text text-xl text-transparent bg-clip-text">Retto's Blog</span>
 					<span class="title-flag text-xl"/>
 				</span>
 			</div>
+			<section class="intro-section mt-6 mb-16 mx-0 sm:px-0">
+				<div class="intro-content max-w-3xl">
+					<p class="intro-greeting text-xl font-medium mb-4 text-foreground">
+						Hi, I'm Retto!
+					</p>
+					<p class="intro-description text-base leading-relaxed mb-6 text-foreground/90">
+						I'm a frontend engineer working in the web3 industry. 
+						<br/>
+						<br/>
+						This blog is a space where I share my personal stories, things I've learned, and knowledge I want to pass on to others.
+					</p>
+				<details class="section-guide mt-6">
+					<summary class="cursor-pointer text-sm text-foreground/70 hover:text-foreground transition-colors list-none">
+						<span class="inline-flex items-center gap-2">
+							<span>Section guide</span>
+							<Icon name="lucide:chevron-down" class="chevron-icon w-4 h-4 transition-transform" />
+						</span>
+						<p class="intro-note text-sm text-foreground/70">
+							For those who prefer to skip personal content, here's a guide to each section
+						</p>
+					</summary>
+					<div class="sections-grid grid grid-cols-1 md:grid-cols-3 gap-3 mt-4">
+						<a href="/blog" class="section-card group p-3 rounded-lg border border-border bg-background/50 hover:bg-background/80 transition-all duration-200 hover:border-accent/50">
+							<div class="flex items-center gap-3">
+								<div class="icon-wrapper shrink-0 w-8 h-8 rounded-md bg-accent/10 group-hover:bg-accent/20 flex items-center justify-center transition-colors">
+									<Icon name="lucide:book-open" class="w-4 h-4" />
+								</div>
+								<div class="flex-1 min-w-0">
+									<h3 class="font-semibold text-sm text-foreground group-hover:text-accent transition-colors">Blog</h3>
+									<p class="text-xs text-foreground/60 leading-snug mt-0.5">
+										Well-organized articles
+									</p>
+								</div>
+							</div>
+						</a>
+
+						<a href="/pebbles" class="section-card group p-3 rounded-lg border border-border bg-background/50 hover:bg-background/80 transition-all duration-200 hover:border-accent/50">
+							<div class="flex items-center gap-3">
+								<div class="icon-wrapper shrink-0 w-8 h-8 rounded-md bg-accent/10 group-hover:bg-accent/20 flex items-center justify-center transition-colors">
+									<span class="text-lg">🪨</span>
+								</div>
+								<div class="flex-1 min-w-0">
+									<h3 class="font-semibold text-sm text-foreground group-hover:text-accent transition-colors">Pebbles</h3>
+									<p class="text-xs text-foreground/60 leading-snug mt-0.5">
+										TIL and learning drafts
+									</p>
+								</div>
+							</div>
+						</a>
+
+						<a href="/log" class="section-card group p-3 rounded-lg border border-border bg-background/50 hover:bg-background/80 transition-all duration-200 hover:border-accent/50">
+							<div class="flex items-center gap-3">
+								<div class="icon-wrapper shrink-0 w-8 h-8 rounded-md bg-accent/10 group-hover:bg-accent/20 flex items-center justify-center transition-colors">
+									<Icon name="lucide:scroll-text" class="w-4 h-4" />
+								</div>
+								<div class="flex-1 min-w-0">
+									<h3 class="font-semibold text-sm text-foreground group-hover:text-accent transition-colors">Log</h3>
+									<p class="text-xs text-foreground/60 leading-snug mt-0.5">
+										Personal thoughts
+									</p>
+								</div>
+							</div>
+						</a>
+					</div>
+				</details>
+			</div>
+			</section>
 		</main>
 		<Footer />
 </Layout>
 
 <style>	
+	.blog-name-container{
+	}
 
-.blog-name-container{
-}
+	.intro-section {
+		max-width: 72ch;
+	}
+
+	.section-guide summary {
+		list-style: none;
+	}
+
+	.section-guide summary::-webkit-details-marker {
+		display: none;
+	}
+
+	.section-guide[open] summary .chevron-icon {
+		transform: rotate(180deg);
+	}
+
+	.section-card {
+		text-decoration: none;
+	}
+
+	.section-card:focus-visible {
+		outline: 2px dashed var(--color-accent);
+		outline-offset: 2px;
+	}
+
+	@media (max-width: 768px) {
+		.sections-grid {
+			grid-template-columns: 1fr;
+		}
+	}
 	.font-HomeHello {
 		font-family: 'HomeHello', sans-serif;
 	}
