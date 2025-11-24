@@ -155,7 +155,7 @@ export async function resolveLogLink(
   if (targetBlog) {
     // Blog posts are always linked to /blog/{slug}
     return {
-      url: `/blog/${targetBlog.metadata.slug}`,
+      url: `/blog/${targetBlog.metadata.slug.normalize("NFC")}`,
       label: targetBlog.metadata.title,
     };
   }
@@ -177,7 +177,7 @@ export async function resolveLogLink(
       context.pebbles.set(targetPebble.sourcePath, targetPebble);
     }
     return {
-      url: `/pebbles/${targetPebble.metadata.slug}`,
+      url: `/pebbles/${targetPebble.metadata.slug.normalize("NFC")}`,
       label: targetPebble.metadata.title,
     };
   }
