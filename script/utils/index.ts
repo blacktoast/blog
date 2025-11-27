@@ -5,4 +5,5 @@ export * from "./string.ts";
 export * from "./date.ts";
 export * from "./types.ts";
 export * from "./loader.ts";
+export * from "./generate_og_image.ts";
 

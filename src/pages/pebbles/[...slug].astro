@@ -14,8 +14,10 @@ type Props = CollectionEntry<'pebbles'>;
 
 const post = Astro.props as Props;
 const { Content } = await render(post);
+const ogImage = `/pebbles/og/${post.id}.png`;
+
 ---
 
-<BlogPost {...post.data}>
+<BlogPost {...post.data} ogImage={ogImage}>
 	<Content />
 </BlogPost>

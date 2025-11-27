@@ -9,9 +9,9 @@ import { Icon } from 'astro-icon/components';
 
 type BlogData = CollectionEntry<'blog'>['data'];
 type PebbleData = CollectionEntry<'pebbles'>['data'] & { heroImage?: undefined };
-type Props = BlogData | PebbleData;
+type Props = (BlogData | PebbleData) & { ogImage?: string };
 
-const { title, description, pubDate, updatedDate, heroImage, tags = [] } = Astro.props as Props;
+const { title, description, pubDate, updatedDate, heroImage, tags = [], ogImage } = Astro.props as Props;
 ---
 
 <Layout
@@ -19,7 +19,7 @@ const { title, description, pubDate, updatedDate, heroImage, tags = [] } = Astro
 	 description={description}
 	 pubDatetime={pubDate}
 	 modDatetime={updatedDate ?? null}
-	 ogImage={heroImage ? heroImage.src : undefined}
+	 ogImage={ogImage || (heroImage ? heroImage.src : undefined)}
 >
 	<Header />
 	<main >

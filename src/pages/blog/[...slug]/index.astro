@@ -1,6 +1,6 @@
 ---
 import { type CollectionEntry, getCollection, render } from 'astro:content';
-import BlogPost from '../../layouts/BlogPost.astro';
+import BlogPost from '@/layouts/BlogPost.astro';
 
 export async function getStaticPaths() {
 	const posts = await getCollection('blog');
@@ -13,8 +13,12 @@ type Props = CollectionEntry<'blog'>;
 
 const post = Astro.props;
 const { Content } = await render(post);
+
+const ogImage = post.data.heroImage 
+	? post.data.heroImage.src 
+	: `/blog/og/${post.id}.png`;
 ---
 
-<BlogPost {...post.data}>
+<BlogPost {...post.data} ogImage={ogImage}>
 	<Content />
 </BlogPost>
