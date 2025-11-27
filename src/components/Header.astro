@@ -3,9 +3,15 @@ import HeaderLink from './HeaderLink.astro';
 import LogoImgDm from '@/assets/text-logo-dm.webp';
 import LogoImgLm from '@/assets/text-logo-lm.webp';
 import { Icon } from 'astro-icon/components';
+
+interface Props {
+	id?: string;
+}
+
+const { id } = Astro.props;
 ---
 
-<header class="m-0 px-4 bg-background/80 dark:bg-background/30 border-b border-border text-foreground mb-4">
+<header id={id} class="m-0 px-4 bg-background/80 dark:bg-background/30 border-b border-border text-foreground mb-4">
 	<nav class="mx-auto max-w-app px-0 sm:px-4 flex items-center justify-between gap-4 flex-wrap">
 		<a href="/" class="no-underline text-inherit relative">
 			<img src={LogoImgLm.src} alt="Blog" class="w-12 h-8 sm:w-20 sm:h-14 border-none m-0 p-0 dark:hidden" />

@@ -1,0 +1,71 @@
+---
+---
+
+<div class="blur-top" id="blur-top"></div>
+
+<style>
+	.blur-top {
+		--h: min(96px, var(--page-top, 96px));
+		z-index: 1;
+		width: 100%;
+		height: var(--h);
+		margin-bottom: calc(-1 * var(--h));
+		margin-left: calc(-1 * var(--body-margin-left, 0));
+		pointer-events: none;
+		-webkit-user-select: none;
+		user-select: none;
+		-webkit-backdrop-filter: blur(5px);
+		backdrop-filter: blur(5px);
+		opacity: 0;
+		position: fixed;
+		top: 0;
+		-webkit-mask-image: linear-gradient(#000 25%, #0000);
+		mask-image: linear-gradient(#000 25%, #0000);
+		transition: opacity 0.3s ease-in-out;
+	}
+
+	.blur-top.visible {
+		opacity: 0.95;
+	}
+</style>
+
+<script is:inline data-astro-rerun>
+	(function() {
+		function initBlurTop() {
+			const blurTop = document.getElementById('blur-top');
+			const header = document.getElementById('blog-header');
+			
+			if (!blurTop || !header) {
+				console.warn('BlurTop: blur-top or blog-header not found');
+				return;
+			}
+
+			const observer = new IntersectionObserver(
+				(entries) => {
+					entries.forEach((entry) => {
+						// Header가 뷰포트에 보이지 않으면 (isIntersecting이 false)
+						// BlurTop을 표시
+						if (!entry.isIntersecting) {
+							blurTop.classList.add('visible');
+						} else {
+							blurTop.classList.remove('visible');
+						}
+					});
+				},
+				{
+					threshold: 0,
+					rootMargin: '0px',
+				}
+			);
+
+			observer.observe(header);
+		}
+
+		if (document.readyState === 'loading') {
+			document.addEventListener('DOMContentLoaded', initBlurTop);
+		} else {
+			initBlurTop();
+		}
+	})();
+</script>
+
