@@ -20,14 +20,18 @@ const {
   author = SITE.author,
   profile = SITE.profile,
   description = SITE.description,
-  ogImage = SITE.ogImage ? `/${SITE.ogImage}` : "/og.png",
+  ogImage = SITE.ogImage || "text-logo-dm-with-back.webp",
   canonicalURL = new URL(Astro.url.pathname, Astro.url),
   pubDatetime,
   modDatetime,
   scrollSmooth = false,
 } = Astro.props;
 
-const socialImageURL = new URL(ogImage, Astro.url);
+const ogImagePath = ogImage.startsWith('/') ? ogImage : `/${ogImage}`;
+
+const socialImageURL = Astro.site 
+  ? new URL(ogImagePath, Astro.site)
+  : new URL(ogImagePath, SITE.url);
 
 const structuredData = {
   "@context": "https://schema.org",
@@ -66,7 +70,6 @@ const structuredData = {
     <meta property="twitter:title" content={title} />
     <meta property="twitter:description" content={description} />
     <meta property="twitter:image" content={socialImageURL.toString()} />
-
 
 
     <!-- General Meta Tags -->
