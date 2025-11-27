@@ -6,6 +6,7 @@ import LogEntry from '../../components/LogEntry.astro';
 import { SITE_TITLE, SITE_DESCRIPTION } from '../../constants';
 import { getCollection } from 'astro:content';
 import Layout from '@/layouts/Layout.astro';
+import BlurTop from '@/components/BlurTop.astro';
 
 const logs = (await getCollection('log')).sort(
 	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
@@ -28,7 +29,8 @@ const years = [...new Set(logs.map((log) => log.data.pubDate.getFullYear()))].so
 ---
 
 <Layout title={`일지 - ${displayMonth} ${displayYear}`} description={SITE_DESCRIPTION}>
-		<Header />
+	<Header id="blog-header" />
+	<BlurTop />
 		<main class="w-full max-w-app mx-auto px-4">
 			<section class="mb-12">
 				<h1 class="text-3xl font-bold mb-8">{displayMonth} {displayYear}</h1>
