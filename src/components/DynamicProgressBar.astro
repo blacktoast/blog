@@ -12,15 +12,11 @@ const { title, headings } = Astro.props;
 
 <div id="dynamic-island-container" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 opacity-0 translate-y-[-20px] pointer-events-none">
   <div id="dynamic-island" class="relative group cursor-pointer">
-    <!-- Liquid Progress Background -->
-    <div id="progress-fill" class="absolute top-0 left-0 h-full bg-accent/20 rounded-full transition-all duration-100 ease-out" style="width: 0%"></div>
     
-    <!-- Glassmorphism Container -->
-    <div class="relative flex items-center gap-3 px-4 py-2 bg-background/60 backdrop-blur-md border border-white/10 rounded-full shadow-lg overflow-hidden">
-      
-      <!-- Progress Circle Icon -->
-      <div class="relative w-5 h-5 flex items-center justify-center">
-        <svg class="w-full h-full -rotate-90" viewBox="0 0 36 36">
+    <div class="dynamic-island-content relative flex flex-col items-center px-4 py-2 bg-background/60 backdrop-blur-md border border-white/10 rounded-xl shadow-lg">
+      <div class="flex items-center gap-3">
+       <div class="relative w-5 h-5 flex items-center justify-center">
+          <svg class="w-full h-full -rotate-90" viewBox="0 0 36 36">
           <path
             class="text-muted/20"
             d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
@@ -39,16 +35,16 @@ const { title, headings } = Astro.props;
           />
         </svg>
       </div>
-
-      <!-- Title -->
       <span class="text-sm font-medium truncate max-w-[200px] sm:max-w-[300px]">{title}</span>
-      
-      <!-- Chevron -->
       <Icon name="lucide:chevron-down" class="w-4 h-4 text-muted-foreground transition-transform duration-300 group-[.open]:rotate-180" />
-    </div>
+       </div>
 
     <!-- Table of Contents Dropdown -->
-    <div id="toc-dropdown" class="absolute top-full left-0 w-full mt-2 bg-background/80 backdrop-blur-md border border-white/10 rounded-xl shadow-xl opacity-0 invisible transition-all duration-200 translate-y-[-10px] p-2 max-h-[60vh] overflow-y-auto">
+    <div
+      id="toc-dropdown"
+      class="w-full max-h-0 opacity-0 scale-y-95 pointer-events-none overflow-hidden origin-top transition-[max-height,opacity,transform] duration-[400ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
+      aria-hidden="true"
+    >
       <nav class="flex flex-col gap-1">
         {headings.filter(h => h.depth <= 3).map((heading) => (
           <a 
@@ -63,39 +59,81 @@ const { title, headings } = Astro.props;
         ))}
       </nav>
     </div>
+    </div>
+
+
   </div>
 </div>
 
-<script>
-  const container = document.getElementById('dynamic-island-container');
+<script is:inline data-astro-rerun>
   const island = document.getElementById('dynamic-island');
-  const progressFill = document.getElementById('progress-fill');
   const progressCircle = document.getElementById('progress-circle');
   const tocDropdown = document.getElementById('toc-dropdown');
-  const header = document.getElementById('blog-header');
+  const dynamicContent = document.querySelector('.dynamic-island-content');
 
   let isTocOpen = false;
 
+  if (tocDropdown) {
+    tocDropdown.style.maxHeight = '0px';
+  }
+
+  const clampTocHeight = () => {
+    if (!tocDropdown) return 0;
+    const maxViewportHeight = window.innerHeight * 0.6;
+    return Math.min(tocDropdown.scrollHeight, maxViewportHeight);
+  };
+
+  const animateTocHeight = (opening) => {
+    if (!tocDropdown) return;
+    const startHeight = tocDropdown.offsetHeight;
+    const targetHeight = opening ? clampTocHeight() : 0;
+    tocDropdown.style.maxHeight = `${startHeight}px`;
+    requestAnimationFrame(() => {
+      tocDropdown.style.maxHeight = `${targetHeight}px`;
+    });
+  };
+
+  const playSpring = (direction) => {
+    if (!dynamicContent) return;
+    dynamicContent.classList.remove('spring-open', 'spring-close');
+    requestAnimationFrame(() => {
+      dynamicContent.classList.add(direction === 'open' ? 'spring-open' : 'spring-close');
+    });
+  };
+
+  const openToc = () => {
+    island?.classList.add('open');
+    playSpring('open');
+    animateTocHeight(true);
+    tocDropdown?.classList.add('opacity-100', 'scale-y-100');
+    tocDropdown?.classList.remove('opacity-0', 'scale-y-95', 'pointer-events-none');
+    tocDropdown?.setAttribute('aria-hidden', 'false');
+  };
+  const closeToc = () => {
+    island?.classList.remove('open');
+    playSpring('close');
+    animateTocHeight(false);
+    tocDropdown?.classList.remove('opacity-100', 'scale-y-100');
+    tocDropdown?.classList.add('opacity-0', 'scale-y-95', 'pointer-events-none');
+    tocDropdown?.setAttribute('aria-hidden', 'true');
+  };
   // Toggle TOC
   island?.addEventListener('click', (e) => {
     e.stopPropagation();
     isTocOpen = !isTocOpen;
     
     if (isTocOpen) {
-      island.classList.add('open');
-      tocDropdown?.classList.remove('invisible', 'opacity-0', 'translate-y-[-10px]');
+      openToc();
     } else {
-      island.classList.remove('open');
-      tocDropdown?.classList.add('invisible', 'opacity-0', 'translate-y-[-10px]');
+      closeToc();
     }
   });
 
   // Close TOC when clicking outside
   document.addEventListener('click', (e) => {
-    if (isTocOpen && !island?.contains(e.target as Node)) {
+    if (isTocOpen && !island?.contains(e.target)) {
       isTocOpen = false;
-      island?.classList.remove('open');
-      tocDropdown?.classList.add('invisible', 'opacity-0', 'translate-y-[-10px]');
+      closeToc();
     }
   });
 
@@ -105,57 +143,66 @@ const { title, headings } = Astro.props;
     const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
     const scrolled = (winScroll / height) * 100;
     
-    // Update liquid fill
-    if (progressFill) {
-      progressFill.style.width = `${scrolled}%`;
-    }
     
-    // Update circle
     if (progressCircle) {
       progressCircle.setAttribute('stroke-dasharray', `${scrolled}, 100`);
     }
-
-    // Show/Hide based on header visibility
-    if (header && container) {
-      const headerRect = header.getBoundingClientRect();
-      if (headerRect.bottom < 0) {
-        container.classList.remove('opacity-0', 'translate-y-[-20px]', 'pointer-events-none');
-      } else {
-        container.classList.add('opacity-0', 'translate-y-[-20px]', 'pointer-events-none');
-        // Close TOC if hidden
-        if (isTocOpen) {
-          isTocOpen = false;
-          island?.classList.remove('open');
-          tocDropdown?.classList.add('invisible', 'opacity-0', 'translate-y-[-10px]');
-        }
-      }
-    }
   }
 
+  function initDynamicProgressBar() {
+			const container = document.getElementById('dynamic-island-container');
+			const header = document.getElementById('blog-header');
+			
+			if (!container || !header) {
+				console.warn('DynamicProgressBar: dynamic-island-container or blog-header not found');
+				return;
+			}
+
+			const observer = new IntersectionObserver(
+				(entries) => {
+					entries.forEach((entry) => {
+						if (!entry.isIntersecting) {
+							container.classList.remove('opacity-0', 'translate-y-[-20px]', 'pointer-events-none');
+              if (isTocOpen) {
+                  isTocOpen = false;
+                  closeToc();
+                }
+						} else {
+              container.classList.add('opacity-0', 'translate-y-[-20px]', 'pointer-events-none');
+						}
+					});
+				},
+				{
+					threshold: 0,
+					rootMargin: '0px',
+				}
+			);
+
+			observer.observe(header);
+		}
+
   window.addEventListener('scroll', updateProgress);
-  window.addEventListener('resize', updateProgress);
-  // Initial check
+  window.addEventListener('resize', () => {
+    updateProgress();
+    if (isTocOpen && tocDropdown) {
+      tocDropdown.style.maxHeight = `${clampTocHeight()}px`;
+    }
+  });
+
   updateProgress();
+
+  dynamicContent?.addEventListener('animationend', () => {
+    dynamicContent.classList.remove('spring-open', 'spring-close');
+  });
+
+  if (document.readyState === 'loading') {
+			document.addEventListener('DOMContentLoaded', initDynamicProgressBar);
+		} else {
+			initDynamicProgressBar();
+		}
 </script>
 
 <style>
-  /* Liquid effect animation */
-  #progress-fill {
-    background: linear-gradient(90deg, 
-      rgba(var(--accent), 0.1) 0%, 
-      rgba(var(--accent), 0.3) 50%, 
-      rgba(var(--accent), 0.1) 100%
-    );
-    background-size: 200% 100%;
-    animation: liquid 3s infinite linear;
-  }
-
-  @keyframes liquid {
-    0% { background-position: 100% 0; }
-    100% { background-position: -100% 0; }
-  }
-  
-  /* Hide scrollbar for TOC */
   #toc-dropdown::-webkit-scrollbar {
     width: 4px;
   }
@@ -165,5 +212,35 @@ const { title, headings } = Astro.props;
   #toc-dropdown::-webkit-scrollbar-thumb {
     background: rgba(var(--accent), 0.2);
     border-radius: 4px;
+  }
+
+  #toc-dropdown {
+    will-change: max-height, opacity, transform;
+  }
+
+  .dynamic-island-content {
+    transform-origin: top center;
+  }
+
+  .dynamic-island-content.spring-open {
+    animation: spring-open 380ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .dynamic-island-content.spring-close {
+    animation: spring-close 280ms cubic-bezier(0.33, 1, 0.68, 1);
+  }
+
+  @keyframes spring-open {
+    0% { transform: scale(0.98, 0.94); }
+    45% { transform: scale(1.02, 1.04); }
+    75% { transform: scale(0.995, 0.985); }
+    100% { transform: scale(1); }
+  }
+
+  @keyframes spring-close {
+    0% { transform: scale(1.01, 1.01); }
+    35% { transform: scale(0.98, 0.94); }
+    70% { transform: scale(1.005, 0.99); }
+    100% { transform: scale(1); }
   }
 </style>
