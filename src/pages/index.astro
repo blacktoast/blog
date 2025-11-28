@@ -210,6 +210,25 @@ import { Icon } from 'astro-icon/components';
 			{ text: "Sjøoter's Blog", flag: '🇳🇴', lang: 'no' } ,    // 노르웨이어
 		];
 		const INTERVAL_DURATION = 5000; 
+		// 각 언어별로 미리 로딩할 폰트 스펙 정의
+		const fontWarmupSpecs = {
+			en: '700 20px "en-blog"',
+			ja: '900 20px "JPLogo"',
+			zh: '400 20px "JPLogo"',
+			fr: '700 20px "FRLogo"',
+			no: '700 20px "FRLogo"',
+		};
+
+		function warmFontForLang(lang) {
+			const spec = fontWarmupSpecs[lang];
+			if (!spec || !document.fonts) return;
+			document.fonts.load(spec);
+		}
+
+		function warmNextFont(index) {
+			const nextIndex = (index + 1) % titles.length;
+			warmFontForLang(titles[nextIndex].lang);
+		}
 		
 		if (!window.__siteTitleState) {
 			window.__siteTitleState = {
@@ -249,6 +268,10 @@ import { Icon } from 'astro-icon/components';
 				return;
 			}
 
+			// 현재 및 다음 폰트를 미리 로딩하여 플래시를 줄인다.
+			warmFontForLang(titles[state.currentIndex].lang);
+			warmNextFont(state.currentIndex);
+
 			// 기존 인터벌 정리
 			if (state.intervalId) {
 				clearInterval(state.intervalId);
@@ -267,6 +290,7 @@ import { Icon } from 'astro-icon/components';
 					state.currentIndex = (state.currentIndex + 1) % titles.length;
 					state.lastUpdateTime = Date.now();
 					applyTitle(titleElement, state.currentIndex);
+					warmNextFont(state.currentIndex);
 					
 					titleElement.style.transform = 'translateY(100%)';
 					titleElement.style.opacity = '0';
