@@ -1,0 +1,169 @@
+---
+import { Icon } from 'astro-icon/components';
+import type { MarkdownHeading } from 'astro';
+
+interface Props {
+  title: string;
+  headings: MarkdownHeading[];
+}
+
+const { title, headings } = Astro.props;
+---
+
+<div id="dynamic-island-container" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 opacity-0 translate-y-[-20px] pointer-events-none">
+  <div id="dynamic-island" class="relative group cursor-pointer">
+    <!-- Liquid Progress Background -->
+    <div id="progress-fill" class="absolute top-0 left-0 h-full bg-accent/20 rounded-full transition-all duration-100 ease-out" style="width: 0%"></div>
+    
+    <!-- Glassmorphism Container -->
+    <div class="relative flex items-center gap-3 px-4 py-2 bg-background/60 backdrop-blur-md border border-white/10 rounded-full shadow-lg overflow-hidden">
+      
+      <!-- Progress Circle Icon -->
+      <div class="relative w-5 h-5 flex items-center justify-center">
+        <svg class="w-full h-full -rotate-90" viewBox="0 0 36 36">
+          <path
+            class="text-muted/20"
+            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="4"
+          />
+          <path
+            id="progress-circle"
+            class="text-accent transition-all duration-100 ease-out"
+            stroke-dasharray="0, 100"
+            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="4"
+          />
+        </svg>
+      </div>
+
+      <!-- Title -->
+      <span class="text-sm font-medium truncate max-w-[200px] sm:max-w-[300px]">{title}</span>
+      
+      <!-- Chevron -->
+      <Icon name="lucide:chevron-down" class="w-4 h-4 text-muted-foreground transition-transform duration-300 group-[.open]:rotate-180" />
+    </div>
+
+    <!-- Table of Contents Dropdown -->
+    <div id="toc-dropdown" class="absolute top-full left-0 w-full mt-2 bg-background/80 backdrop-blur-md border border-white/10 rounded-xl shadow-xl opacity-0 invisible transition-all duration-200 translate-y-[-10px] p-2 max-h-[60vh] overflow-y-auto">
+      <nav class="flex flex-col gap-1">
+        {headings.filter(h => h.depth <= 3).map((heading) => (
+          <a 
+            href={`#${heading.slug}`} 
+            class:list={[
+              "text-sm px-3 py-1.5 rounded-lg hover:bg-accent/10 transition-colors text-muted-foreground hover:text-foreground truncate block",
+              { "pl-3": heading.depth === 1, "pl-6": heading.depth === 2, "pl-9": heading.depth === 3 }
+            ]}
+          >
+            {heading.text}
+          </a>
+        ))}
+      </nav>
+    </div>
+  </div>
+</div>
+
+<script>
+  const container = document.getElementById('dynamic-island-container');
+  const island = document.getElementById('dynamic-island');
+  const progressFill = document.getElementById('progress-fill');
+  const progressCircle = document.getElementById('progress-circle');
+  const tocDropdown = document.getElementById('toc-dropdown');
+  const header = document.getElementById('blog-header');
+
+  let isTocOpen = false;
+
+  // Toggle TOC
+  island?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    isTocOpen = !isTocOpen;
+    
+    if (isTocOpen) {
+      island.classList.add('open');
+      tocDropdown?.classList.remove('invisible', 'opacity-0', 'translate-y-[-10px]');
+    } else {
+      island.classList.remove('open');
+      tocDropdown?.classList.add('invisible', 'opacity-0', 'translate-y-[-10px]');
+    }
+  });
+
+  // Close TOC when clicking outside
+  document.addEventListener('click', (e) => {
+    if (isTocOpen && !island?.contains(e.target as Node)) {
+      isTocOpen = false;
+      island?.classList.remove('open');
+      tocDropdown?.classList.add('invisible', 'opacity-0', 'translate-y-[-10px]');
+    }
+  });
+
+  // Scroll & Progress Logic
+  function updateProgress() {
+    const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+    const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+    const scrolled = (winScroll / height) * 100;
+    
+    // Update liquid fill
+    if (progressFill) {
+      progressFill.style.width = `${scrolled}%`;
+    }
+    
+    // Update circle
+    if (progressCircle) {
+      progressCircle.setAttribute('stroke-dasharray', `${scrolled}, 100`);
+    }
+
+    // Show/Hide based on header visibility
+    if (header && container) {
+      const headerRect = header.getBoundingClientRect();
+      if (headerRect.bottom < 0) {
+        container.classList.remove('opacity-0', 'translate-y-[-20px]', 'pointer-events-none');
+      } else {
+        container.classList.add('opacity-0', 'translate-y-[-20px]', 'pointer-events-none');
+        // Close TOC if hidden
+        if (isTocOpen) {
+          isTocOpen = false;
+          island?.classList.remove('open');
+          tocDropdown?.classList.add('invisible', 'opacity-0', 'translate-y-[-10px]');
+        }
+      }
+    }
+  }
+
+  window.addEventListener('scroll', updateProgress);
+  window.addEventListener('resize', updateProgress);
+  // Initial check
+  updateProgress();
+</script>
+
+<style>
+  /* Liquid effect animation */
+  #progress-fill {
+    background: linear-gradient(90deg, 
+      rgba(var(--accent), 0.1) 0%, 
+      rgba(var(--accent), 0.3) 50%, 
+      rgba(var(--accent), 0.1) 100%
+    );
+    background-size: 200% 100%;
+    animation: liquid 3s infinite linear;
+  }
+
+  @keyframes liquid {
+    0% { background-position: 100% 0; }
+    100% { background-position: -100% 0; }
+  }
+  
+  /* Hide scrollbar for TOC */
+  #toc-dropdown::-webkit-scrollbar {
+    width: 4px;
+  }
+  #toc-dropdown::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  #toc-dropdown::-webkit-scrollbar-thumb {
+    background: rgba(var(--accent), 0.2);
+    border-radius: 4px;
+  }
+</style>

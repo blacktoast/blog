@@ -13,11 +13,11 @@ export async function getStaticPaths() {
 type Props = CollectionEntry<'pebbles'>;
 
 const post = Astro.props as Props;
-const { Content } = await render(post);
+const { Content, headings } = await render(post);
 const ogImage = `/pebbles/og/${post.id}.png`;
 
 ---
 
-<BlogPost {...post.data} ogImage={ogImage}>
+<BlogPost {...post.data} ogImage={ogImage} headings={headings}>
 	<Content />
 </BlogPost>

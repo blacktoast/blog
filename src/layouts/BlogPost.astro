@@ -7,12 +7,14 @@ import Header from '../components/Header.astro';
 import BlurTop from '../components/BlurTop.astro';
 import Layout from '@/layouts/Layout.astro';
 import { Icon } from 'astro-icon/components';
+import DynamicProgressBar from '../components/DynamicProgressBar.astro';
+import type { MarkdownHeading } from 'astro';
 
 type BlogData = CollectionEntry<'blog'>['data'];
 type PebbleData = CollectionEntry<'pebbles'>['data'] & { heroImage?: undefined };
-type Props = (BlogData | PebbleData) & { ogImage?: string };
+type Props = (BlogData | PebbleData) & { ogImage?: string; headings: MarkdownHeading[] };
 
-const { title, description, pubDate, updatedDate, heroImage, tags = [], ogImage } = Astro.props as Props;
+const { title, description, pubDate, updatedDate, heroImage, tags = [], ogImage, headings } = Astro.props as Props;
 ---
 
 <Layout
@@ -22,6 +24,7 @@ const { title, description, pubDate, updatedDate, heroImage, tags = [], ogImage 
 	 modDatetime={updatedDate ?? null}
 	 ogImage={ogImage || (heroImage ? heroImage.src : undefined)}
 >
+	<DynamicProgressBar title={title} headings={headings} />
 	<Header id="blog-header" />
 	<BlurTop />
 	<main >
@@ -66,52 +69,6 @@ const { title, description, pubDate, updatedDate, heroImage, tags = [], ogImage 
 	</main>
 	<Footer />
 </Layout>
-
-<script is:inline data-astro-rerun>
-  (function () {
-    /** Create a progress indicator
-   *  at the top */
-  function createProgressBar() {
-    // Create the main container div
-    const progressContainer = document.createElement("div");
-    progressContainer.className =
-      "progress-container fixed top-0 z-10 h-1 w-full bg-background";
-
-    // Create the progress bar div
-    const progressBar = document.createElement("div");
-    progressBar.className = "progress-bar h-1 w-0 bg-accent";
-    progressBar.id = "myBar";
-
-    // Append the progress bar to the progress container
-    progressContainer.appendChild(progressBar);
-
-    // Append the progress container to the document body or any other desired parent element
-    document.body.appendChild(progressContainer);
-  }
-  createProgressBar();
-
-  /** Update the progress bar
-   *  when user scrolls */
-  function updateScrollProgress() {
-    document.addEventListener("scroll", () => {
-      const winScroll =
-        document.body.scrollTop || document.documentElement.scrollTop;
-      const height =
-        document.documentElement.scrollHeight -
-        document.documentElement.clientHeight;
-      const scrolled = (winScroll / height) * 100;
-      if (document) {
-        const myBar = document.getElementById("myBar");
-        if (myBar) {
-          myBar.style.width = scrolled + "%";
-        }
-      }
-    });
-  }
-  updateScrollProgress();
-	
-  })();
-</script>
 
 <style>
 		.hero-image {
