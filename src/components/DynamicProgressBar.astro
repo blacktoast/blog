@@ -14,7 +14,7 @@ const { title, headings } = Astro.props;
   <div id="dynamic-island" class="relative group cursor-pointer">
     
     <div class="dynamic-island-content relative flex flex-col items-center px-4 py-2 bg-background/60 backdrop-blur-md border border-white/10 rounded-xl shadow-lg">
-      <div class="flex items-center gap-3">
+      <div class="dynamic-island-header flex items-center gap-3">
        <div class="relative w-5 h-5 flex items-center justify-center">
           <svg class="w-full h-full -rotate-90" viewBox="0 0 36 36">
           <path
@@ -70,12 +70,65 @@ const { title, headings } = Astro.props;
   const progressCircle = document.getElementById('progress-circle');
   const tocDropdown = document.getElementById('toc-dropdown');
   const dynamicContent = document.querySelector('.dynamic-island-content');
+  const headerRow = document.querySelector('.dynamic-island-header');
 
   let isTocOpen = false;
 
   if (tocDropdown) {
     tocDropdown.style.maxHeight = '0px';
+    tocDropdown.style.width = '0px';
+    tocDropdown.style.maxWidth = '0px';
   }
+
+  const getHorizontalPadding = () => {
+    if (!dynamicContent) return 0;
+    const styles = getComputedStyle(dynamicContent);
+    return parseFloat(styles.paddingLeft) + parseFloat(styles.paddingRight);
+  };
+
+  const measureCollapsedWidth = () => {
+    if (!dynamicContent) return 0;
+    const baseWidth = headerRow ? headerRow.getBoundingClientRect().width : dynamicContent.getBoundingClientRect().width;
+    return Math.ceil(baseWidth + getHorizontalPadding());
+  };
+
+  const measureExpandedWidth = () => {
+    if (!dynamicContent || !tocDropdown) return measureCollapsedWidth();
+
+    const prevWidth = tocDropdown.style.width;
+    const prevMaxWidth = tocDropdown.style.maxWidth;
+    const prevMaxHeight = tocDropdown.style.maxHeight;
+    const prevOpacity = tocDropdown.style.opacity;
+    const prevTransform = tocDropdown.style.transform;
+
+    tocDropdown.style.width = 'max-content';
+    tocDropdown.style.maxWidth = '80vw';
+    tocDropdown.style.maxHeight = 'none';
+    tocDropdown.style.opacity = '0';
+    tocDropdown.style.transform = 'none';
+
+    const dropdownWidth = tocDropdown.scrollWidth;
+    const target = Math.max(measureCollapsedWidth(), Math.ceil(dropdownWidth + getHorizontalPadding()));
+
+    tocDropdown.style.width = prevWidth;
+    tocDropdown.style.maxWidth = prevMaxWidth;
+    tocDropdown.style.maxHeight = prevMaxHeight;
+    tocDropdown.style.opacity = prevOpacity;
+    tocDropdown.style.transform = prevTransform;
+
+    return target;
+  };
+
+  const setDropdownWidth = (opening) => {
+    if (!tocDropdown) return;
+    if (opening) {
+      tocDropdown.style.width = '100%';
+      tocDropdown.style.maxWidth = '80vw';
+    } else {
+      tocDropdown.style.width = '0px';
+      tocDropdown.style.maxWidth = '0px';
+    }
+  };
 
   const clampTocHeight = () => {
     if (!tocDropdown) return 0;
@@ -104,7 +157,16 @@ const { title, headings } = Astro.props;
   const openToc = () => {
     island?.classList.add('open');
     playSpring('open');
+    const collapsedWidth = measureCollapsedWidth();
+    const targetWidth = measureExpandedWidth();
+    setDropdownWidth(true);
     animateTocHeight(true);
+    if (dynamicContent) {
+      dynamicContent.style.width = `${collapsedWidth}px`;
+      requestAnimationFrame(() => {
+        dynamicContent.style.width = `${targetWidth}px`;
+      });
+    }
     tocDropdown?.classList.add('opacity-100', 'scale-y-100');
     tocDropdown?.classList.remove('opacity-0', 'scale-y-95', 'pointer-events-none');
     tocDropdown?.setAttribute('aria-hidden', 'false');
@@ -112,7 +174,18 @@ const { title, headings } = Astro.props;
   const closeToc = () => {
     island?.classList.remove('open');
     playSpring('close');
+    const startWidth = dynamicContent?.offsetWidth ?? 0;
+    const targetWidth = measureCollapsedWidth();
     animateTocHeight(false);
+    if (dynamicContent) {
+      dynamicContent.style.width = `${startWidth}px`;
+      requestAnimationFrame(() => {
+        dynamicContent.style.width = `${targetWidth}px`;
+        setDropdownWidth(false);
+      });
+    } else {
+      setDropdownWidth(false);
+    }
     tocDropdown?.classList.remove('opacity-100', 'scale-y-100');
     tocDropdown?.classList.add('opacity-0', 'scale-y-95', 'pointer-events-none');
     tocDropdown?.setAttribute('aria-hidden', 'true');
@@ -125,6 +198,7 @@ const { title, headings } = Astro.props;
     if (isTocOpen) {
       openToc();
     } else {
+
       closeToc();
     }
   });
@@ -135,6 +209,11 @@ const { title, headings } = Astro.props;
       isTocOpen = false;
       closeToc();
     }
+  });
+
+  // Prevent closing when clicking inside the dropdown links
+  tocDropdown?.addEventListener('click', (e) => {
+    e.stopPropagation();
   });
 
   // Scroll & Progress Logic
@@ -149,43 +228,54 @@ const { title, headings } = Astro.props;
     }
   }
 
+  let headerObserver = null;
+
   function initDynamicProgressBar() {
-			const container = document.getElementById('dynamic-island-container');
-			const header = document.getElementById('blog-header');
-			
-			if (!container || !header) {
-				console.warn('DynamicProgressBar: dynamic-island-container or blog-header not found');
-				return;
-			}
+    const container = document.getElementById('dynamic-island-container');
+    const header = document.getElementById('blog-header');
+    
+    if (!container || !header) {
+      console.warn('DynamicProgressBar: dynamic-island-container or blog-header not found');
+      return;
+    }
 
-			const observer = new IntersectionObserver(
-				(entries) => {
-					entries.forEach((entry) => {
-						if (!entry.isIntersecting) {
-							container.classList.remove('opacity-0', 'translate-y-[-20px]', 'pointer-events-none');
-              if (isTocOpen) {
-                  isTocOpen = false;
-                  closeToc();
-                }
-						} else {
-              container.classList.add('opacity-0', 'translate-y-[-20px]', 'pointer-events-none');
-						}
-					});
-				},
-				{
-					threshold: 0,
-					rootMargin: '0px',
-				}
-			);
+    if (headerObserver) {
+      headerObserver.disconnect();
+    }
 
-			observer.observe(header);
-		}
+    headerObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) {
+            container.classList.remove('opacity-0', 'translate-y-[-20px]', 'pointer-events-none');
+            if (isTocOpen) {
+              isTocOpen = false;
+              closeToc();
+            }
+          } else {
+            container.classList.add('opacity-0', 'translate-y-[-20px]', 'pointer-events-none');
+          }
+        });
+      },
+      {
+        threshold: 0,
+        rootMargin: '0px',
+      }
+    );
+
+    headerObserver.observe(header);
+  }
 
   window.addEventListener('scroll', updateProgress);
   window.addEventListener('resize', () => {
     updateProgress();
     if (isTocOpen && tocDropdown) {
       tocDropdown.style.maxHeight = `${clampTocHeight()}px`;
+      setDropdownWidth(true);
+      const targetWidth = measureExpandedWidth();
+      if (dynamicContent) {
+        dynamicContent.style.width = `${targetWidth}px`;
+      }
     }
   });
 
@@ -195,11 +285,23 @@ const { title, headings } = Astro.props;
     dynamicContent.classList.remove('spring-open', 'spring-close');
   });
 
+  dynamicContent?.addEventListener('transitionend', (e) => {
+    if (e.propertyName === 'width' && !isTocOpen) {
+      dynamicContent.style.width = '';
+    }
+  });
+
   if (document.readyState === 'loading') {
-			document.addEventListener('DOMContentLoaded', initDynamicProgressBar);
-		} else {
-			initDynamicProgressBar();
-		}
+				document.addEventListener('DOMContentLoaded', initDynamicProgressBar);
+        
+			} else {
+				initDynamicProgressBar();
+			}
+
+  document.addEventListener('astro:after-swap', () => {
+    initDynamicProgressBar();
+    updateProgress();
+  });
 </script>
 
 <style>
@@ -215,15 +317,18 @@ const { title, headings } = Astro.props;
   }
 
   #toc-dropdown {
-    will-change: max-height, opacity, transform;
+    width: 0;
+    max-width: 0;
+    will-change: max-height, opacity, transform, width;
   }
 
   .dynamic-island-content {
     transform-origin: top center;
+    transition: width 260ms cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   .dynamic-island-content.spring-open {
-    animation: spring-open 380ms cubic-bezier(0.34, 1.56, 0.64, 1);
+    animation: spring-open 380ms ease-in-out
   }
 
   .dynamic-island-content.spring-close {
@@ -231,9 +336,8 @@ const { title, headings } = Astro.props;
   }
 
   @keyframes spring-open {
-    0% { transform: scale(0.98, 0.94); }
     45% { transform: scale(1.02, 1.04); }
-    75% { transform: scale(0.995, 0.985); }
+    85% { transform: scale(0.995, 0.985); }
     100% { transform: scale(1); }
   }
 
