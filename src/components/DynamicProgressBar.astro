@@ -163,6 +163,7 @@ const { title, headings } = Astro.props;
 
     // 3. TOC Logic
     let isTocOpen = false;
+    let lastIndicatorSlug: string | null = null;
 
     const getHorizontalPadding = () => {
       const styles = getComputedStyle(dynamicContent);
@@ -248,6 +249,8 @@ const { title, headings } = Astro.props;
           pointerEvents: "none"
         }, { duration: 0.3, ease: [0.22, 1, 0.36, 1] }).finished.then(() => {
           tocDropdown.style.display = "none";
+          // 닫힐 때 indicator slug 리셋 (다음 열릴 때 다시 계산)
+          lastIndicatorSlug = null;
         });
       }
     };
@@ -279,56 +282,75 @@ const { title, headings } = Astro.props;
 
     const moveShellIndicator = (slug: string | null) => {
       if (!shellIndicator || !tocNav) return;
+      
+      // 같은 slug면 스킵 (불필요한 연산 방지)
+      if (slug === lastIndicatorSlug) return;
+      lastIndicatorSlug = slug;
+
       if (!slug) {
-        animate(shellIndicator, { opacity: 0 }, { duration: 0.2 });
+        shellIndicator.style.opacity = '0';
         return;
       }
       const activeLink = tocNav.querySelector<HTMLElement>(`a[data-slug="${slug}"]`);
       if (!activeLink) {
-        animate(shellIndicator, { opacity: 0 }, { duration: 0.2 });
+        shellIndicator.style.opacity = '0';
         return;
       }
 
       const navRect = tocNav.getBoundingClientRect();
       const linkRect = activeLink.getBoundingClientRect();
-      const indicatorRect = shellIndicator.getBoundingClientRect();
-      const offset = linkRect.top - navRect.top + (linkRect.height - indicatorRect.height) / 2;
+      const offset = linkRect.top - navRect.top + (linkRect.height - 16) / 2;
 
-      animate(shellIndicator, { 
-        y: offset, 
-        opacity: offset === 0 ? 0 : 1 
-      }, { 
-        type: "spring", 
-        stiffness: 300, 
-        damping: 30 
-      });
+      // CSS transition 사용 (GPU 가속)
+      shellIndicator.style.transform = `translateY(${offset}px)`;
+      shellIndicator.style.opacity = offset === 0 ? '0' : '1';
     };
+
+    // 스크롤 쓰로틀링용 변수
+    let ticking = false;
+    let lastScrollSlug: string | null = null;
 
     const updateActiveHeading = () => {
       if (!headingTargets.length) return;
       
       const triggerY = window.innerHeight * 0.3;
-      currentActiveSlug = headingTargets[0].id;
+      let newSlug = headingTargets[0].id;
       
       for (const el of headingTargets) {
         const rect = el.getBoundingClientRect();
         if (rect.top <= triggerY) {
-          currentActiveSlug = el.id;
+          newSlug = el.id;
         } else {
           break;
         }
       }
 
-      tocLinks.forEach((link) => {
-        const isActive = link.dataset.slug === currentActiveSlug;
-        link.classList.toggle('toc-active', isActive);
-      });
-      if (isTocOpen) {
-        moveShellIndicator(currentActiveSlug);
+      // slug가 변경된 경우에만 DOM 업데이트
+      if (newSlug !== lastScrollSlug) {
+        lastScrollSlug = newSlug;
+        currentActiveSlug = newSlug;
+        
+        tocLinks.forEach((link) => {
+          const isActive = link.dataset.slug === currentActiveSlug;
+          link.classList.toggle('toc-active', isActive);
+        });
+        
+        if (isTocOpen) {
+          moveShellIndicator(currentActiveSlug);
+        }
+      }
+      
+      ticking = false;
+    };
+
+    const onScroll = () => {
+      if (!ticking) {
+        requestAnimationFrame(updateActiveHeading);
+        ticking = true;
       }
     };
 
-    window.addEventListener('scroll', updateActiveHeading, { passive: true });
+    window.addEventListener('scroll', onScroll, { passive: true });
     updateActiveHeading();
     
     // Handle Resize
@@ -379,6 +401,8 @@ const { title, headings } = Astro.props;
 
   #toc-shell-indicator {
     filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.15));
+    transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.2s ease;
+    will-change: transform, opacity;
   }
 
   .dynamic-island-content {
