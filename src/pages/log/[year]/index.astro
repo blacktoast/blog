@@ -4,6 +4,8 @@ import Header from '../../../components/Header.astro';
 import Footer from '../../../components/Footer.astro';
 import { SITE_TITLE, SITE_DESCRIPTION } from '../../../constants';
 import { getCollection } from 'astro:content';
+import Layout from '@/layouts/Layout.astro';
+import BlurTop from '@/components/BlurTop.astro';
 
 export async function getStaticPaths() {
 	const logs = await getCollection('log');
@@ -24,13 +26,9 @@ const monthNames = [
 ];
 ---
 
-<!doctype html>
-<html lang="en">
-	<head>
-		<BaseHead title={`Log ${year} | ${SITE_TITLE}`} description={SITE_DESCRIPTION} />
-	</head>
-	<body>
-		<Header />
+<Layout title={`Log ${year} | ${SITE_TITLE}`} description={SITE_DESCRIPTION}>
+	<Header id="blog-header" />
+	<BlurTop />
 		<main class="w-full max-w-app mx-auto px-4">
 			<section class="mb-12">
 				<div class="flex items-center gap-4 mb-8">
@@ -53,5 +51,4 @@ const monthNames = [
 			</section>
 		</main>
 		<Footer />
-	</body>
-</html>
+</Layout>

@@ -10,7 +10,7 @@ interface Props {
 const { title, headings } = Astro.props;
 ---
 
-<div id="dynamic-island-container" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 opacity-0 translate-y-[-20px] pointer-events-none">
+<div id="dynamic-island-container" class="fixed top-8 left-1/2 -translate-x-1/2 z-50 opacity-0 translate-y-[-20px] pointer-events-none">
   <div id="dynamic-island" class="relative group cursor-pointer">
     
     <div class="dynamic-island-content relative flex flex-col items-center px-4 py-2 bg-background/60 backdrop-blur-md border border-white/10 rounded-xl shadow-lg">
@@ -26,7 +26,7 @@ const { title, headings } = Astro.props;
           />
           <path
             id="progress-circle"
-            class="text-accent transition-all duration-100 ease-out"
+            class="text-accent"
             stroke-dasharray="0, 100"
             d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
             fill="none"
@@ -45,16 +45,16 @@ const { title, headings } = Astro.props;
 
        {
         headings.length > 0 && (
-              <div
+          <div
             id="toc-dropdown"
-            class="w-full max-h-0 opacity-0 scale-y-95 pointer-events-none overflow-hidden origin-top transition-[max-height,opacity,transform] duration-[400ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
+            class="pointer-events-none overflow-hidden origin-top"
             aria-hidden="true"
           >
           
             <nav id="toc-nav" class="relative flex flex-col gap-1 pt-1">
               <div
                 id="toc-shell-indicator"
-                class="absolute left-2 top-0 w-4 h-4 text-accent opacity-0 pointer-events-none transition-[transform,opacity] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform"
+                class="absolute left-2 top-0 w-4 h-4 text-accent opacity-0 pointer-events-none will-change-transform"
                 aria-hidden="true"
               >
                 <div class="w-4 h-4 flex items-center justify-center">
@@ -95,296 +95,246 @@ const { title, headings } = Astro.props;
 </div>
 
 <script>
+  import { animate, scroll, inView } from "motion";
 
   console.log('DynamicProgressBar script loaded');
 
-  const init=()=>{
-        const island = document.getElementById('dynamic-island');
-      const progressCircle = document.getElementById('progress-circle');
-      const tocDropdown = document.getElementById('toc-dropdown');
-      const dynamicContent = document.querySelector('.dynamic-island-content');
-      const headerRow = document.querySelector('.dynamic-island-header');
-      const tocNav = document.getElementById('toc-nav');
-      const shellIndicator = document.getElementById('toc-shell-indicator');
-      const tocLinks = Array.from(document.querySelectorAll<HTMLAnchorElement>('#toc-dropdown nav a'));
+  const init = () => {
+    const island = document.getElementById('dynamic-island');
+    const container = document.getElementById('dynamic-island-container');
+    const progressCircle = document.getElementById('progress-circle');
+    const tocDropdown = document.getElementById('toc-dropdown');
+    const dynamicContent = document.querySelector('.dynamic-island-content') as HTMLElement;
+    const headerRow = document.querySelector('.dynamic-island-header') as HTMLElement;
+    const tocNav = document.getElementById('toc-nav');
+    const shellIndicator = document.getElementById('toc-shell-indicator');
+    const tocLinks = Array.from(document.querySelectorAll<HTMLAnchorElement>('#toc-dropdown nav a'));
+    const header = document.getElementById('blog-header');
 
-      const headingTargets = tocLinks
-        .map((link) => {
-          const slug = link.getAttribute('href')?.slice(1);
-          return slug ? document.getElementById(slug) : null;
-        })
-        .filter((el): el is HTMLElement => Boolean(el));
 
-      let lastActiveSlug : string | null = null;
-      let isTocOpen = false;
+    if (!island || !container || !dynamicContent || !headerRow || !tocDropdown) return;
 
-      if (tocDropdown) {
-        tocDropdown.style.maxHeight = '0px';
-        tocDropdown.style.width = '0px';
-        tocDropdown.style.maxWidth = '0px';
-      }
+    // 1. Scroll Progress
+    if (progressCircle) {
+      scroll((progress: number) => {
+        const scrolled = progress * 100;
+        progressCircle.setAttribute('stroke-dasharray', `${scrolled}, 100`);
+      });
+    }
 
-      const getHorizontalPadding = () => {
-        if (!dynamicContent) return 0;
-        const styles = getComputedStyle(dynamicContent);
-        return parseFloat(styles.paddingLeft) + parseFloat(styles.paddingRight);
-      };
+    // 2. Show/Hide Island based on Header visibility
+    // 2. Show/Hide Island based on Header visibility
+    if (header) {
+      // Check initial state
+      const checkInitialVisibility = () => {
+        const rect = header.getBoundingClientRect();
 
-      const measureCollapsedWidth = () => {
-        if (!dynamicContent) return 0;
-        const baseWidth = headerRow ? headerRow.getBoundingClientRect().width : dynamicContent.getBoundingClientRect().width;
-        return Math.ceil(baseWidth + getHorizontalPadding());
-      };
-
-      const measureExpandedWidth = () => {
-        if (!dynamicContent || !tocDropdown) return measureCollapsedWidth();
-
-        const prevWidth = tocDropdown.style.width;
-        const prevMaxWidth = tocDropdown.style.maxWidth;
-        const prevMaxHeight = tocDropdown.style.maxHeight;
-        const prevOpacity = tocDropdown.style.opacity;
-        const prevTransform = tocDropdown.style.transform;
-
-        tocDropdown.style.width = 'max-content';
-        tocDropdown.style.maxWidth = '80vw';
-        tocDropdown.style.maxHeight = 'none';
-        tocDropdown.style.opacity = '0';
-        tocDropdown.style.transform = 'none';
-
-        const dropdownWidth = tocDropdown.scrollWidth;
-        const target = Math.max(measureCollapsedWidth(), Math.ceil(dropdownWidth + getHorizontalPadding()));
-
-        tocDropdown.style.width = prevWidth;
-        tocDropdown.style.maxWidth = prevMaxWidth;
-        tocDropdown.style.maxHeight = prevMaxHeight;
-        tocDropdown.style.opacity = prevOpacity;
-        tocDropdown.style.transform = prevTransform;
-
-        return target;
-      };
-
-      const setDropdownWidth = (opening : boolean) => {
-        if (!tocDropdown) return;
-        if (opening) {
-          tocDropdown.style.width = '100%';
-          tocDropdown.style.maxWidth = '80vw';
-        } else {
-          tocDropdown.style.width = '0px';
-          tocDropdown.style.maxWidth = '0px';
+        if (rect.bottom < 0) {
+          // Header is already scrolled past -> Show Island immediately
+          animate(container, { 
+            opacity: 1, 
+            scale: [1.0, 1.04, 0.98, 1.0],
+            pointerEvents: "auto" 
+          }, { duration: 0.3 });
         }
       };
+      checkInitialVisibility();
 
-      const clampTocHeight = () => {
-        if (!tocDropdown) return 0;
-        const maxViewportHeight = window.innerHeight * 0.6;
-        return Math.min(tocDropdown.scrollHeight, maxViewportHeight);
-      };
-
-      const animateTocHeight = (opening : boolean) => {
-        if (!tocDropdown) return;
-        const startHeight = tocDropdown.offsetHeight;
-        const targetHeight = opening ? clampTocHeight() : 0;
-        tocDropdown.style.maxHeight = `${startHeight}px`;
-        requestAnimationFrame(() => {
-          tocDropdown.style.maxHeight = `${targetHeight}px`;
-        });
-      };
-
-      const playSpring = (direction : 'open' | 'close') => {
-        if (!dynamicContent) return;
-        dynamicContent.classList.remove('spring-open', 'spring-close');
-        requestAnimationFrame(() => {
-          dynamicContent.classList.add(direction === 'open' ? 'spring-open' : 'spring-close');
-        });
-      };
-
-      const openToc = () => {
+      inView(header, () => {
+        animate(container, { 
+          opacity: [0], 
+          scale: [1, 0.8],
+          pointerEvents: "none" 
+        }, { duration: 0.3});
         
-        island?.classList.add('open');
-        playSpring('open');
-        const collapsedWidth = measureCollapsedWidth();
-        const targetWidth = measureExpandedWidth();
-        setDropdownWidth(true);
-        animateTocHeight(true);
-        if (dynamicContent) {
-          (dynamicContent as HTMLElement).style.width = `${collapsedWidth}px`;
-          requestAnimationFrame(() => {
-            (dynamicContent as HTMLElement).style.width = `${targetWidth}px`;
-          });
-        }
-        tocDropdown?.classList.add('opacity-100', 'scale-y-100');
-        tocDropdown?.classList.remove('opacity-0', 'scale-y-95', 'pointer-events-none');
-        tocDropdown?.setAttribute('aria-hidden', 'false');
-      };
-      const closeToc = () => {
-        island?.classList.remove('open');
-        playSpring('close');
-        const startWidth = (dynamicContent as HTMLElement).offsetWidth ?? 0;
-        const targetWidth = measureCollapsedWidth();
-        animateTocHeight(false);
-        if (dynamicContent) {
-          (dynamicContent as HTMLElement).style.width = `${startWidth}px`;
-          requestAnimationFrame(() => {
-            (dynamicContent as HTMLElement).style.width = `${targetWidth}px`;
-            setDropdownWidth(false);
-          });
-        } else {
-          setDropdownWidth(false);
-        }
-        tocDropdown?.classList.remove('opacity-100', 'scale-y-100');
-        tocDropdown?.classList.add('opacity-0', 'scale-y-95', 'pointer-events-none');
-        tocDropdown?.setAttribute('aria-hidden', 'true');
-      };
-      // Toggle TOC
-      island?.addEventListener('click', (e) => {
-        e.stopPropagation();
-        isTocOpen = !isTocOpen;
         if (isTocOpen) {
-          openToc();
-        } else {
-
-          closeToc();
+          toggleToc(false);
         }
+
+        return () => {
+          animate(container, { 
+            opacity: 1, 
+            scale: [1.0, 1.04, 0.98, 1.0],
+            pointerEvents: "auto" 
+          }, { duration: 0.3 });
+        };
       });
+    }
 
-      // Close TOC when clicking outside
-      document.addEventListener('click', (e : MouseEvent) => {
-        if (isTocOpen && !island?.contains(e.target as Node)) {
-          isTocOpen = false;
-          closeToc();
-        }
-      });
+    // 3. TOC Logic
+    let isTocOpen = false;
 
-      // Prevent closing when clicking inside the dropdown links
-      tocDropdown?.addEventListener('click', (e) => {
-        e.stopPropagation();
-      });
+    const getHorizontalPadding = () => {
+      const styles = getComputedStyle(dynamicContent);
+      return parseFloat(styles.paddingLeft) + parseFloat(styles.paddingRight);
+    };
 
-      // Scroll & Progress Logic
-      function updateProgress() {
-        const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
-        const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-        const scrolled = (winScroll / height) * 100;
-        if (progressCircle) {
-          progressCircle.setAttribute('stroke-dasharray', `${scrolled}, 100`);
-        }
-      }
+    const measureCollapsedWidth = () => {
+      const baseWidth = headerRow.getBoundingClientRect().width;
+      return Math.ceil(baseWidth + getHorizontalPadding());
+    };
 
-      const moveShellIndicator = (slug : string | null) => {
-        if (!shellIndicator || !tocNav) return;
-        if (!slug) {
-          shellIndicator.style.opacity = '0';
-          return;
-        }
-        const activeLink = tocNav.querySelector<HTMLElement>(`a[data-slug="${slug}"]`);
-        if (!activeLink) {
-          shellIndicator.style.opacity = '0';
-          return;
-        }
-        const navRect = tocNav.getBoundingClientRect();
-        const linkRect = activeLink.getBoundingClientRect();
-        const indicatorRect = shellIndicator.getBoundingClientRect();
-        const offset = linkRect.top - navRect.top + (linkRect.height - indicatorRect.height) / 2;
-        shellIndicator.style.transform = `translateY(${offset}px)`;
-        shellIndicator.style.opacity = '1';
-      };
+    const measureExpandedWidth = () => {
+      // Temporarily set styles to measure natural width
+      const prevWidth = tocDropdown.style.width;
+      const prevMaxHeight = tocDropdown.style.maxHeight;
+      const prevOpacity = tocDropdown.style.opacity;
+      const prevDisplay = tocDropdown.style.display;
+      
+      tocDropdown.style.display = 'block';
+      tocDropdown.style.width = 'max-content';
+      tocDropdown.style.maxHeight = 'none';
+      tocDropdown.style.opacity = '0';
+      
+      const dropdownWidth = tocDropdown.scrollWidth;
+      const target = Math.max(measureCollapsedWidth(), Math.ceil(dropdownWidth + getHorizontalPadding()));
+      
+      tocDropdown.style.width = prevWidth;
+      tocDropdown.style.maxHeight = prevMaxHeight;
+      tocDropdown.style.opacity = prevOpacity;
+      tocDropdown.style.display = prevDisplay;
+      
+      return target;
+    };
 
-      const updateActiveHeading = () => {
-        if (!headingTargets.length) return;
-        const triggerY = window.innerHeight * 0.3;
-        let currentSlug : string | null = headingTargets[0].id;
-        for (const el of headingTargets) {
-          const rect = el.getBoundingClientRect();
-          if (rect.top <= triggerY) {
-            currentSlug = el.id;
-          } else {
-            break;
-          }
-        }
-        if (currentSlug === lastActiveSlug) return;
-        lastActiveSlug = currentSlug;
-        tocLinks.forEach((link) => {
-          const isActive = link.dataset.slug === currentSlug;
-          link.classList.toggle('toc-active', isActive);
-        });
-        moveShellIndicator(currentSlug);
-      };
-
-      let headerObserver : IntersectionObserver | null = null;
-
-      function initDynamicProgressBar() {
-        const container = document.getElementById('dynamic-island-container');
-        const header = document.getElementById('blog-header');
+    const toggleToc = (open: boolean) => {
+      isTocOpen = open;
+      
+      if (open) {
+        island.classList.add('open');
+        tocDropdown.setAttribute('aria-hidden', 'false');
         
-        if (!container || !header) {
-          console.warn('DynamicProgressBar: dynamic-island-container or blog-header not found');
-          return;
-        }
+        // Spring animation for container
+        animate(dynamicContent, { 
+          scale: [1, 1.02, 0.99, 1],
+          width: `${measureExpandedWidth()}px`
+        }, { 
+          duration: 0.5,
+          ease: [0.22, 1, 0.36, 1]
+        });
 
-        if (headerObserver) {
-          headerObserver.disconnect();
-        }
+        // Open Dropdown
+        animate(tocDropdown, { 
+          opacity: 1,
+          height: "auto",
+          width: "100%",
+          display: "block",
+          scale: 1,
+          pointerEvents: "auto"
+        }, { duration: 0.4, ease: [0.22, 1, 0.36, 1] });
 
-        headerObserver = new IntersectionObserver(
-          (entries) => {
-            entries.forEach((entry) => {
-              if (!entry.isIntersecting) {
-                container.classList.remove('opacity-0', 'translate-y-[-20px]', 'pointer-events-none');
-                if (isTocOpen) {
-                  isTocOpen = false;
-                  closeToc();
-                }
-              } else {
-                container.classList.add('opacity-0', 'translate-y-[-20px]', 'pointer-events-none');
-              }
-            });
-          },
-          {
-            threshold: 0,
-            rootMargin: '0px',
-          }
-        );
+      } else {
+        island.classList.remove('open');
+        tocDropdown.setAttribute('aria-hidden', 'true');
 
-        headerObserver.observe(header);
+        // Spring animation for container
+        animate(dynamicContent, { 
+          scale: [1, 1.01, 0.98, 1],
+          width: `${measureCollapsedWidth()}px`
+        }, { 
+          duration: 0.5,
+          ease: [0.22, 1, 0.36, 1]
+        });
+
+        // Close Dropdown
+        animate(tocDropdown, { 
+          opacity: 0,
+          height: 0,
+          width: "100%",
+          scale: 0.95,
+          pointerEvents: "none"
+        }, { duration: 0.3, ease: [0.22, 1, 0.36, 1] }).finished.then(() => {
+          tocDropdown.style.display = "none";
+        });
+      }
+    };
+
+    island.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleToc(!isTocOpen);
+    });
+
+    document.addEventListener('click', (e) => {
+      if (isTocOpen && !island.contains(e.target as Node)) {
+        toggleToc(false);
+      }
+    });
+
+    tocDropdown.addEventListener('click', (e) => {
+      e.stopPropagation();
+    });
+
+    // 4. Active Heading & Shell Indicator
+    const headingTargets = tocLinks
+      .map((link) => {
+        const slug = link.getAttribute('href')?.slice(1);
+        return slug ? document.getElementById(slug) : null;
+      })
+      .filter((el): el is HTMLElement => Boolean(el));
+
+    const moveShellIndicator = (slug: string | null) => {
+      if (!shellIndicator || !tocNav) return;
+      if (!slug) {
+        animate(shellIndicator, { opacity: 0 }, { duration: 0.2 });
+        return;
+      }
+      const activeLink = tocNav.querySelector<HTMLElement>(`a[data-slug="${slug}"]`);
+      if (!activeLink) {
+        animate(shellIndicator, { opacity: 0 }, { duration: 0.2 });
+        return;
       }
 
-      const handleScroll = () => {
-        updateProgress();
-        updateActiveHeading();
-      };
+      const navRect = tocNav.getBoundingClientRect();
+      const linkRect = activeLink.getBoundingClientRect();
+      const indicatorRect = shellIndicator.getBoundingClientRect();
+      const offset = linkRect.top - navRect.top + (linkRect.height - indicatorRect.height) / 2;
+      
 
-      window.addEventListener('scroll', handleScroll);
-      window.addEventListener('resize', () => {
-        updateProgress();
-        updateActiveHeading();
-        if (isTocOpen && tocDropdown) {
-          tocDropdown.style.maxHeight = `${clampTocHeight()}px`;
-          setDropdownWidth(true);
-          const targetWidth = measureExpandedWidth();
-          if (dynamicContent) {
-            (dynamicContent as HTMLElement).style.width = `${targetWidth}px`;
-          }
+      animate(shellIndicator, { 
+        y: offset, 
+        opacity: offset ===0 ? 0 : 1 
+      }, { 
+        type: "spring", 
+        stiffness: 300, 
+        damping: 30 
+      });
+    };
+
+    const updateActiveHeading = () => {
+      if (!headingTargets.length) return;
+      
+      const triggerY = window.innerHeight * 0.3;
+      let currentSlug: string | null = headingTargets[0].id;
+      
+      for (const el of headingTargets) {
+        const rect = el.getBoundingClientRect();
+        if (rect.top <= triggerY) {
+          currentSlug = el.id;
+        } else {
+          break;
         }
+      }
+
+      tocLinks.forEach((link) => {
+        const isActive = link.dataset.slug === currentSlug;
+        link.classList.toggle('toc-active', isActive);
       });
+      moveShellIndicator(currentSlug);
+    };
 
-      updateProgress();
-      updateActiveHeading();
-      initDynamicProgressBar();
+    window.addEventListener('scroll', updateActiveHeading, { passive: true });
+    updateActiveHeading();
+    
+    // Handle Resize
+    window.addEventListener('resize', () => {
+      if (isTocOpen) {
+        // Recalculate width if open
+        animate(dynamicContent, { width: `${measureExpandedWidth()}px` }, { duration: 0 });
+      }
+    });
+  };
 
-
-      dynamicContent?.addEventListener('animationend', () => {
-        dynamicContent.classList.remove('spring-open', 'spring-close');
-      });
-
-      dynamicContent?.addEventListener('transitionend', (e) => {
-        if ((e as TransitionEvent).propertyName === 'width' && !isTocOpen) {
-          (dynamicContent as HTMLElement).style.width = '';
-        }
-      });
-  }
-  
   document.addEventListener('astro:page-load', () => {
-    console.log('astro:page-load');
     init();
   });
 </script>
@@ -402,9 +352,10 @@ const { title, headings } = Astro.props;
   }
 
   #toc-dropdown {
+    display: none; /* Hidden by default, motion will handle display */
+    height: 0;
     width: 0;
-    max-width: 0;
-    will-change: max-height, opacity, transform, width;
+    opacity: 0;
   }
 
   .toc-link {
@@ -426,27 +377,5 @@ const { title, headings } = Astro.props;
 
   .dynamic-island-content {
     transform-origin: top center;
-    transition: width 260ms cubic-bezier(0.22, 1, 0.36, 1);
-  }
-
-  .dynamic-island-content.spring-open {
-    animation: spring-open 380ms ease-in-out
-  }
-
-  .dynamic-island-content.spring-close {
-    animation: spring-close 380ms ease-in-out;
-  }
-
-  @keyframes spring-open {
-    45% { transform: scale(1.02, 1.04); }
-    85% { transform: scale(0.995, 0.985); }
-    100% { transform: scale(1); }
-  }
-
-  @keyframes spring-close {
-    0% { transform: scale(1.01, 1.01); }
-    10%  { transform: scale(1.04, 1.06); }
-    35% { transform: scale(0.98, 0.94); }
-    100% { transform: scale(1); }
   }
 </style>

@@ -5,6 +5,8 @@ import Footer from '../../../../components/Footer.astro';
 import LogEntry from '../../../../components/LogEntry.astro';
 import { SITE_TITLE, SITE_DESCRIPTION } from '../../../../constants';
 import { getCollection } from 'astro:content';
+import Layout from '@/layouts/Layout.astro';
+import BlurTop from '@/components/BlurTop.astro';
 
 export async function getStaticPaths() {
 	const logs = await getCollection('log');
@@ -33,12 +35,10 @@ const monthName = new Date(year, month).toLocaleString('default', { month: 'long
 ---
 
 <!doctype html>
-<html lang="en">
-	<head>
-		<BaseHead title={`Log ${monthName} ${year} | ${SITE_TITLE}`} description={SITE_DESCRIPTION} />
-	</head>
-	<body>
-		<Header />
+
+<Layout title={`Log ${monthName} ${year} | ${SITE_TITLE}`} description={SITE_DESCRIPTION}></Layout>
+		<Header id="blog-header" />
+		<BlurTop />
 		<main class="w-full max-w-app mx-auto px-4">
 			<section class="mb-12">
 				<div class="flex items-center gap-4 mb-8">
@@ -56,5 +56,4 @@ const monthName = new Date(year, month).toLocaleString('default', { month: 'long
 			</section>
 		</main>
 		<Footer />
-	</body>
-</html>
+</Layout>
