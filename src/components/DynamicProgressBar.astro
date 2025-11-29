@@ -97,24 +97,26 @@ const { title, headings } = Astro.props;
 <script>
   import { animate, scroll, inView } from "motion";
 
-  console.log('DynamicProgressBar script loaded');
-
   const init = () => {
+    // 필수 요소
     const island = document.getElementById('dynamic-island');
     const container = document.getElementById('dynamic-island-container');
     const progressCircle = document.getElementById('progress-circle');
-    const tocDropdown = document.getElementById('toc-dropdown');
     const dynamicContent = document.querySelector('.dynamic-island-content') as HTMLElement;
     const headerRow = document.querySelector('.dynamic-island-header') as HTMLElement;
+    const header = document.getElementById('blog-header');
+
+    // TOC 관련 요소 (선택적)
+    const tocDropdown = document.getElementById('toc-dropdown');
     const tocNav = document.getElementById('toc-nav');
     const shellIndicator = document.getElementById('toc-shell-indicator');
     const tocLinks = Array.from(document.querySelectorAll<HTMLAnchorElement>('#toc-dropdown nav a'));
-    const header = document.getElementById('blog-header');
+    const hasToc = !!tocDropdown && tocLinks.length > 0;
 
+    // 필수 요소 체크
+    if (!island || !container || !dynamicContent || !headerRow) return;
 
-    if (!island || !container || !dynamicContent || !headerRow || !tocDropdown) return;
-
-    // 1. Scroll Progress
+    // 1. Scroll Progress (항상 실행)
     if (progressCircle) {
       scroll((progress: number) => {
         const scrolled = progress * 100;
@@ -122,15 +124,14 @@ const { title, headings } = Astro.props;
       });
     }
 
-    // 2. Show/Hide Island based on Header visibility
+    // TOC 상태
+    let isTocOpen = false;
+
     // 2. Show/Hide Island based on Header visibility
     if (header) {
-      // Check initial state
       const checkInitialVisibility = () => {
         const rect = header.getBoundingClientRect();
-
         if (rect.bottom < 0) {
-          // Header is already scrolled past -> Show Island immediately
           animate(container, { 
             opacity: 1, 
             scale: [1.0, 1.04, 0.98, 1.0],
@@ -145,9 +146,9 @@ const { title, headings } = Astro.props;
           opacity: [0], 
           scale: [1, 0.8],
           pointerEvents: "none" 
-        }, { duration: 0.3});
+        }, { duration: 0.3 });
         
-        if (isTocOpen) {
+        if (hasToc && isTocOpen) {
           toggleToc(false);
         }
 
@@ -161,9 +162,10 @@ const { title, headings } = Astro.props;
       });
     }
 
-    // 3. TOC Logic
-    let isTocOpen = false;
+    // TOC가 없으면 여기서 종료
+    if (!hasToc || !tocDropdown) return;
 
+    // 3. TOC Logic
     const getHorizontalPadding = () => {
       const styles = getComputedStyle(dynamicContent);
       return parseFloat(styles.paddingLeft) + parseFloat(styles.paddingRight);
@@ -175,7 +177,6 @@ const { title, headings } = Astro.props;
     };
 
     const measureExpandedWidth = () => {
-      // Temporarily set styles to measure natural width
       const prevWidth = tocDropdown.style.width;
       const prevMaxHeight = tocDropdown.style.maxHeight;
       const prevOpacity = tocDropdown.style.opacity;
@@ -196,76 +197,6 @@ const { title, headings } = Astro.props;
       
       return target;
     };
-
-    const toggleToc = (open: boolean) => {
-      isTocOpen = open;
-      
-      if (open) {
-        island.classList.add('open');
-        tocDropdown.setAttribute('aria-hidden', 'false');
-        
-        // Spring animation for container
-        animate(dynamicContent, { 
-          scale: [1, 1.02, 0.99, 1],
-          width: `${measureExpandedWidth()}px`
-        }, { 
-          duration: 0.5,
-          ease: [0.22, 1, 0.36, 1]
-        });
-
-        // Open Dropdown
-        animate(tocDropdown, { 
-          opacity: 1,
-          height: "auto",
-          width: "100%",
-          display: "block",
-          scale: 1,
-          pointerEvents: "auto"
-        }, { duration: 0.4, ease: [0.22, 1, 0.36, 1] }).finished.then(() => {
-          // TOC가 열린 후 현재 active heading으로 indicator 이동
-          moveShellIndicator(currentActiveSlug);
-        });
-
-      } else {
-        island.classList.remove('open');
-        tocDropdown.setAttribute('aria-hidden', 'true');
-
-        // Spring animation for container
-        animate(dynamicContent, { 
-          scale: [1, 1.01, 0.98, 1],
-          width: `${measureCollapsedWidth()}px`
-        }, { 
-          duration: 0.5,
-          ease: [0.22, 1, 0.36, 1]
-        });
-
-        // Close Dropdown
-        animate(tocDropdown, { 
-          opacity: 0,
-          height: 0,
-          width: "100%",
-          scale: 0.95,
-          pointerEvents: "none"
-        }, { duration: 0.3, ease: [0.22, 1, 0.36, 1] }).finished.then(() => {
-          tocDropdown.style.display = "none";
-        });
-      }
-    };
-
-    island.addEventListener('click', (e) => {
-      e.stopPropagation();
-      toggleToc(!isTocOpen);
-    });
-
-    document.addEventListener('click', (e) => {
-      if (isTocOpen && !island.contains(e.target as Node)) {
-        toggleToc(false);
-      }
-    });
-
-    tocDropdown.addEventListener('click', (e) => {
-      e.stopPropagation();
-    });
 
     // 4. Active Heading & Shell Indicator
     const headingTargets = tocLinks
@@ -304,6 +235,56 @@ const { title, headings } = Astro.props;
       });
     };
 
+    const toggleToc = (open: boolean) => {
+      isTocOpen = open;
+      
+      if (open) {
+        island.classList.add('open');
+        tocDropdown.setAttribute('aria-hidden', 'false');
+        
+        animate(dynamicContent, { 
+          scale: [1, 1.02, 0.99, 1],
+          width: `${measureExpandedWidth()}px`
+        }, { 
+          duration: 0.5,
+          ease: [0.22, 1, 0.36, 1]
+        });
+
+        animate(tocDropdown, { 
+          opacity: 1,
+          height: "auto",
+          width: "100%",
+          display: "block",
+          scale: 1,
+          pointerEvents: "auto"
+        }, { duration: 0.4, ease: [0.22, 1, 0.36, 1] }).finished.then(() => {
+          moveShellIndicator(currentActiveSlug);
+        });
+
+      } else {
+        island.classList.remove('open');
+        tocDropdown.setAttribute('aria-hidden', 'true');
+
+        animate(dynamicContent, { 
+          scale: [1, 1.01, 0.98, 1],
+          width: `${measureCollapsedWidth()}px`
+        }, { 
+          duration: 0.5,
+          ease: [0.22, 1, 0.36, 1]
+        });
+
+        animate(tocDropdown, { 
+          opacity: 0,
+          height: 0,
+          width: "100%",
+          scale: 0.95,
+          pointerEvents: "none"
+        }, { duration: 0.3, ease: [0.22, 1, 0.36, 1] }).finished.then(() => {
+          tocDropdown.style.display = "none";
+        });
+      }
+    };
+
     const updateActiveHeading = () => {
       if (!headingTargets.length) return;
       
@@ -328,13 +309,27 @@ const { title, headings } = Astro.props;
       }
     };
 
+    // Event listeners
+    island.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleToc(!isTocOpen);
+    });
+
+    document.addEventListener('click', (e) => {
+      if (isTocOpen && !island.contains(e.target as Node)) {
+        toggleToc(false);
+      }
+    });
+
+    tocDropdown.addEventListener('click', (e) => {
+      e.stopPropagation();
+    });
+
     window.addEventListener('scroll', updateActiveHeading, { passive: true });
     updateActiveHeading();
     
-    // Handle Resize
     window.addEventListener('resize', () => {
       if (isTocOpen) {
-        // Recalculate width if open
         animate(dynamicContent, { width: `${measureExpandedWidth()}px` }, { duration: 0 });
       }
     });
