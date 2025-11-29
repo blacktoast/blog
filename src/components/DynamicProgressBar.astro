@@ -51,14 +51,33 @@ const { title, headings } = Astro.props;
             aria-hidden="true"
           >
           
-            <nav class="flex flex-col gap-1">
+            <nav id="toc-nav" class="relative flex flex-col gap-1 pt-1">
+              <div
+                id="toc-shell-indicator"
+                class="absolute left-2 top-0 w-4 h-4 text-accent opacity-0 pointer-events-none transition-[transform,opacity] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform"
+                aria-hidden="true"
+              >
+                <div class="w-4 h-4 flex items-center justify-center">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M7 18 C 7 18 9 21 12 21 C 15 21 17 18 17 18" />
+                    <path d="M17 18 C 20 16 22 13 21 9 C 20.5 7 19 4 12 3 C 5 4 3.5 7 3 9 C 2 13 4 16 7 18" />
+                    <path d="M12 3 L 12 10" />      
+                    <path d="M15.5 4 L 14.5 10.5" /> 
+                    <path d="M8.5 4 L 9.5 10.5" />   
+                    <path d="M19 8 L 16.5 13" />     
+                    <path d="M5 8 L 7.5 13" />        
+                </svg>
+                </div>
+              </div>
+              <div class="w-1 h-1"/>
               {headings.filter(h => h.depth <= 3).map((heading) => (
                 <a 
                   href={`#${heading.slug}`} 
                   class:list={[
-                    "text-sm px-3 py-1.5 rounded-lg hover:bg-accent/10 transition-colors text-muted-foreground hover:text-foreground truncate block",
-                    { "pl-3": heading.depth === 1, "pl-6": heading.depth === 2, "pl-9": heading.depth === 3 }
+                    "toc-link relative text-sm px-3 py-1.5 rounded-lg hover:bg-accent/10 transition-colors text-muted-foreground hover:text-foreground truncate block",
+                    { "pl-7": heading.depth === 1, "pl-9": heading.depth === 2, "pl-12": heading.depth === 3 }
                   ]}
+                  data-slug={heading.slug}
                 >
                   {heading.text}
                 </a>
@@ -85,9 +104,18 @@ const { title, headings } = Astro.props;
       const tocDropdown = document.getElementById('toc-dropdown');
       const dynamicContent = document.querySelector('.dynamic-island-content');
       const headerRow = document.querySelector('.dynamic-island-header');
+      const tocNav = document.getElementById('toc-nav');
+      const shellIndicator = document.getElementById('toc-shell-indicator');
+      const tocLinks = Array.from(document.querySelectorAll<HTMLAnchorElement>('#toc-dropdown nav a'));
 
+      const headingTargets = tocLinks
+        .map((link) => {
+          const slug = link.getAttribute('href')?.slice(1);
+          return slug ? document.getElementById(slug) : null;
+        })
+        .filter((el): el is HTMLElement => Boolean(el));
 
-      
+      let lastActiveSlug : string | null = null;
       let isTocOpen = false;
 
       if (tocDropdown) {
@@ -210,7 +238,6 @@ const { title, headings } = Astro.props;
       // Toggle TOC
       island?.addEventListener('click', (e) => {
         e.stopPropagation();
-
         isTocOpen = !isTocOpen;
         if (isTocOpen) {
           openToc();
@@ -238,12 +265,50 @@ const { title, headings } = Astro.props;
         const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
         const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
         const scrolled = (winScroll / height) * 100;
-        
-        
         if (progressCircle) {
           progressCircle.setAttribute('stroke-dasharray', `${scrolled}, 100`);
         }
       }
+
+      const moveShellIndicator = (slug : string | null) => {
+        if (!shellIndicator || !tocNav) return;
+        if (!slug) {
+          shellIndicator.style.opacity = '0';
+          return;
+        }
+        const activeLink = tocNav.querySelector<HTMLElement>(`a[data-slug="${slug}"]`);
+        if (!activeLink) {
+          shellIndicator.style.opacity = '0';
+          return;
+        }
+        const navRect = tocNav.getBoundingClientRect();
+        const linkRect = activeLink.getBoundingClientRect();
+        const indicatorRect = shellIndicator.getBoundingClientRect();
+        const offset = linkRect.top - navRect.top + (linkRect.height - indicatorRect.height) / 2;
+        shellIndicator.style.transform = `translateY(${offset}px)`;
+        shellIndicator.style.opacity = '1';
+      };
+
+      const updateActiveHeading = () => {
+        if (!headingTargets.length) return;
+        const triggerY = window.innerHeight * 0.3;
+        let currentSlug : string | null = headingTargets[0].id;
+        for (const el of headingTargets) {
+          const rect = el.getBoundingClientRect();
+          if (rect.top <= triggerY) {
+            currentSlug = el.id;
+          } else {
+            break;
+          }
+        }
+        if (currentSlug === lastActiveSlug) return;
+        lastActiveSlug = currentSlug;
+        tocLinks.forEach((link) => {
+          const isActive = link.dataset.slug === currentSlug;
+          link.classList.toggle('toc-active', isActive);
+        });
+        moveShellIndicator(currentSlug);
+      };
 
       let headerObserver : IntersectionObserver | null = null;
 
@@ -283,9 +348,15 @@ const { title, headings } = Astro.props;
         headerObserver.observe(header);
       }
 
-      window.addEventListener('scroll', updateProgress);
+      const handleScroll = () => {
+        updateProgress();
+        updateActiveHeading();
+      };
+
+      window.addEventListener('scroll', handleScroll);
       window.addEventListener('resize', () => {
         updateProgress();
+        updateActiveHeading();
         if (isTocOpen && tocDropdown) {
           tocDropdown.style.maxHeight = `${clampTocHeight()}px`;
           setDropdownWidth(true);
@@ -297,6 +368,7 @@ const { title, headings } = Astro.props;
       });
 
       updateProgress();
+      updateActiveHeading();
       initDynamicProgressBar();
 
 
@@ -335,6 +407,23 @@ const { title, headings } = Astro.props;
     will-change: max-height, opacity, transform, width;
   }
 
+  .toc-link {
+    transition: color 180ms ease, background-color 180ms ease;
+  }
+
+  .toc-link.toc-active {
+    color: rgb(var(--foreground));
+    background: rgba(var(--accent), 0.14);
+  }
+
+  .toc-link.toc-active:hover {
+    background: rgba(var(--accent), 0.18);
+  }
+
+  #toc-shell-indicator {
+    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.15));
+  }
+
   .dynamic-island-content {
     transform-origin: top center;
     transition: width 260ms cubic-bezier(0.22, 1, 0.36, 1);
@@ -345,7 +434,7 @@ const { title, headings } = Astro.props;
   }
 
   .dynamic-island-content.spring-close {
-    animation: spring-close 280ms cubic-bezier(0.33, 1, 0.68, 1);
+    animation: spring-close 380ms ease-in-out;
   }
 
   @keyframes spring-open {
@@ -356,8 +445,8 @@ const { title, headings } = Astro.props;
 
   @keyframes spring-close {
     0% { transform: scale(1.01, 1.01); }
+    10%  { transform: scale(1.04, 1.06); }
     35% { transform: scale(0.98, 0.94); }
-    70% { transform: scale(1.005, 0.99); }
     100% { transform: scale(1); }
   }
 </style>
