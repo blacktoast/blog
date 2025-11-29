@@ -35,272 +35,285 @@ const { title, headings } = Astro.props;
           />
         </svg>
       </div>
-      <span class="text-sm font-medium truncate max-w-[200px] sm:max-w-[300px]">{title}</span>
-      <Icon name="lucide:chevron-down" class="w-4 h-4 text-muted-foreground transition-transform duration-300 group-[.open]:rotate-180" />
+          <span class="text-sm font-medium truncate max-w-[200px] sm:max-w-[300px]">{title}</span>
+          {
+            headings.length > 0 && (
+              <Icon name="lucide:chevron-down" class="w-4 h-4 text-muted-foreground transition-transform duration-300 group-[.open]:rotate-180" />
+            )
+          }
        </div>
 
-    <!-- Table of Contents Dropdown -->
-    <div
-      id="toc-dropdown"
-      class="w-full max-h-0 opacity-0 scale-y-95 pointer-events-none overflow-hidden origin-top transition-[max-height,opacity,transform] duration-[400ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
-      aria-hidden="true"
-    >
-      <nav class="flex flex-col gap-1">
-        {headings.filter(h => h.depth <= 3).map((heading) => (
-          <a 
-            href={`#${heading.slug}`} 
-            class:list={[
-              "text-sm px-3 py-1.5 rounded-lg hover:bg-accent/10 transition-colors text-muted-foreground hover:text-foreground truncate block",
-              { "pl-3": heading.depth === 1, "pl-6": heading.depth === 2, "pl-9": heading.depth === 3 }
-            ]}
+       {
+        headings.length > 0 && (
+              <div
+            id="toc-dropdown"
+            class="w-full max-h-0 opacity-0 scale-y-95 pointer-events-none overflow-hidden origin-top transition-[max-height,opacity,transform] duration-[400ms] ease-[cubic-bezier(0.22,1,0.36,1)]"
+            aria-hidden="true"
           >
-            {heading.text}
-          </a>
-        ))}
-      </nav>
-    </div>
+          
+            <nav class="flex flex-col gap-1">
+              {headings.filter(h => h.depth <= 3).map((heading) => (
+                <a 
+                  href={`#${heading.slug}`} 
+                  class:list={[
+                    "text-sm px-3 py-1.5 rounded-lg hover:bg-accent/10 transition-colors text-muted-foreground hover:text-foreground truncate block",
+                    { "pl-3": heading.depth === 1, "pl-6": heading.depth === 2, "pl-9": heading.depth === 3 }
+                  ]}
+                >
+                  {heading.text}
+                </a>
+              ))}
+            </nav>
+         </div>
+        )
+       }
+    <!-- Table of Contents Dropdown -->
+    
     </div>
 
 
   </div>
 </div>
 
-<script is:inline data-astro-rerun>
-  const island = document.getElementById('dynamic-island');
-  const progressCircle = document.getElementById('progress-circle');
-  const tocDropdown = document.getElementById('toc-dropdown');
-  const dynamicContent = document.querySelector('.dynamic-island-content');
-  const headerRow = document.querySelector('.dynamic-island-header');
+<script>
 
-  let isTocOpen = false;
+  console.log('DynamicProgressBar script loaded');
 
-  if (tocDropdown) {
-    tocDropdown.style.maxHeight = '0px';
-    tocDropdown.style.width = '0px';
-    tocDropdown.style.maxWidth = '0px';
-  }
+  const init=()=>{
+        const island = document.getElementById('dynamic-island');
+      const progressCircle = document.getElementById('progress-circle');
+      const tocDropdown = document.getElementById('toc-dropdown');
+      const dynamicContent = document.querySelector('.dynamic-island-content');
+      const headerRow = document.querySelector('.dynamic-island-header');
 
-  const getHorizontalPadding = () => {
-    if (!dynamicContent) return 0;
-    const styles = getComputedStyle(dynamicContent);
-    return parseFloat(styles.paddingLeft) + parseFloat(styles.paddingRight);
-  };
 
-  const measureCollapsedWidth = () => {
-    if (!dynamicContent) return 0;
-    const baseWidth = headerRow ? headerRow.getBoundingClientRect().width : dynamicContent.getBoundingClientRect().width;
-    return Math.ceil(baseWidth + getHorizontalPadding());
-  };
+      
+      let isTocOpen = false;
 
-  const measureExpandedWidth = () => {
-    if (!dynamicContent || !tocDropdown) return measureCollapsedWidth();
+      if (tocDropdown) {
+        tocDropdown.style.maxHeight = '0px';
+        tocDropdown.style.width = '0px';
+        tocDropdown.style.maxWidth = '0px';
+      }
 
-    const prevWidth = tocDropdown.style.width;
-    const prevMaxWidth = tocDropdown.style.maxWidth;
-    const prevMaxHeight = tocDropdown.style.maxHeight;
-    const prevOpacity = tocDropdown.style.opacity;
-    const prevTransform = tocDropdown.style.transform;
+      const getHorizontalPadding = () => {
+        if (!dynamicContent) return 0;
+        const styles = getComputedStyle(dynamicContent);
+        return parseFloat(styles.paddingLeft) + parseFloat(styles.paddingRight);
+      };
 
-    tocDropdown.style.width = 'max-content';
-    tocDropdown.style.maxWidth = '80vw';
-    tocDropdown.style.maxHeight = 'none';
-    tocDropdown.style.opacity = '0';
-    tocDropdown.style.transform = 'none';
+      const measureCollapsedWidth = () => {
+        if (!dynamicContent) return 0;
+        const baseWidth = headerRow ? headerRow.getBoundingClientRect().width : dynamicContent.getBoundingClientRect().width;
+        return Math.ceil(baseWidth + getHorizontalPadding());
+      };
 
-    const dropdownWidth = tocDropdown.scrollWidth;
-    const target = Math.max(measureCollapsedWidth(), Math.ceil(dropdownWidth + getHorizontalPadding()));
+      const measureExpandedWidth = () => {
+        if (!dynamicContent || !tocDropdown) return measureCollapsedWidth();
 
-    tocDropdown.style.width = prevWidth;
-    tocDropdown.style.maxWidth = prevMaxWidth;
-    tocDropdown.style.maxHeight = prevMaxHeight;
-    tocDropdown.style.opacity = prevOpacity;
-    tocDropdown.style.transform = prevTransform;
+        const prevWidth = tocDropdown.style.width;
+        const prevMaxWidth = tocDropdown.style.maxWidth;
+        const prevMaxHeight = tocDropdown.style.maxHeight;
+        const prevOpacity = tocDropdown.style.opacity;
+        const prevTransform = tocDropdown.style.transform;
 
-    return target;
-  };
+        tocDropdown.style.width = 'max-content';
+        tocDropdown.style.maxWidth = '80vw';
+        tocDropdown.style.maxHeight = 'none';
+        tocDropdown.style.opacity = '0';
+        tocDropdown.style.transform = 'none';
 
-  const setDropdownWidth = (opening) => {
-    if (!tocDropdown) return;
-    if (opening) {
-      tocDropdown.style.width = '100%';
-      tocDropdown.style.maxWidth = '80vw';
-    } else {
-      tocDropdown.style.width = '0px';
-      tocDropdown.style.maxWidth = '0px';
-    }
-  };
+        const dropdownWidth = tocDropdown.scrollWidth;
+        const target = Math.max(measureCollapsedWidth(), Math.ceil(dropdownWidth + getHorizontalPadding()));
 
-  const clampTocHeight = () => {
-    if (!tocDropdown) return 0;
-    const maxViewportHeight = window.innerHeight * 0.6;
-    return Math.min(tocDropdown.scrollHeight, maxViewportHeight);
-  };
+        tocDropdown.style.width = prevWidth;
+        tocDropdown.style.maxWidth = prevMaxWidth;
+        tocDropdown.style.maxHeight = prevMaxHeight;
+        tocDropdown.style.opacity = prevOpacity;
+        tocDropdown.style.transform = prevTransform;
 
-  const animateTocHeight = (opening) => {
-    if (!tocDropdown) return;
-    const startHeight = tocDropdown.offsetHeight;
-    const targetHeight = opening ? clampTocHeight() : 0;
-    tocDropdown.style.maxHeight = `${startHeight}px`;
-    requestAnimationFrame(() => {
-      tocDropdown.style.maxHeight = `${targetHeight}px`;
-    });
-  };
+        return target;
+      };
 
-  const playSpring = (direction) => {
-    if (!dynamicContent) return;
-    dynamicContent.classList.remove('spring-open', 'spring-close');
-    requestAnimationFrame(() => {
-      dynamicContent.classList.add(direction === 'open' ? 'spring-open' : 'spring-close');
-    });
-  };
+      const setDropdownWidth = (opening : boolean) => {
+        if (!tocDropdown) return;
+        if (opening) {
+          tocDropdown.style.width = '100%';
+          tocDropdown.style.maxWidth = '80vw';
+        } else {
+          tocDropdown.style.width = '0px';
+          tocDropdown.style.maxWidth = '0px';
+        }
+      };
 
-  const openToc = () => {
-    island?.classList.add('open');
-    playSpring('open');
-    const collapsedWidth = measureCollapsedWidth();
-    const targetWidth = measureExpandedWidth();
-    setDropdownWidth(true);
-    animateTocHeight(true);
-    if (dynamicContent) {
-      dynamicContent.style.width = `${collapsedWidth}px`;
-      requestAnimationFrame(() => {
-        dynamicContent.style.width = `${targetWidth}px`;
-      });
-    }
-    tocDropdown?.classList.add('opacity-100', 'scale-y-100');
-    tocDropdown?.classList.remove('opacity-0', 'scale-y-95', 'pointer-events-none');
-    tocDropdown?.setAttribute('aria-hidden', 'false');
-  };
-  const closeToc = () => {
-    island?.classList.remove('open');
-    playSpring('close');
-    const startWidth = dynamicContent?.offsetWidth ?? 0;
-    const targetWidth = measureCollapsedWidth();
-    animateTocHeight(false);
-    if (dynamicContent) {
-      dynamicContent.style.width = `${startWidth}px`;
-      requestAnimationFrame(() => {
-        dynamicContent.style.width = `${targetWidth}px`;
-        setDropdownWidth(false);
-      });
-    } else {
-      setDropdownWidth(false);
-    }
-    tocDropdown?.classList.remove('opacity-100', 'scale-y-100');
-    tocDropdown?.classList.add('opacity-0', 'scale-y-95', 'pointer-events-none');
-    tocDropdown?.setAttribute('aria-hidden', 'true');
-  };
-  // Toggle TOC
-  island?.addEventListener('click', (e) => {
-    e.stopPropagation();
-    isTocOpen = !isTocOpen;
-    
-    if (isTocOpen) {
-      openToc();
-    } else {
+      const clampTocHeight = () => {
+        if (!tocDropdown) return 0;
+        const maxViewportHeight = window.innerHeight * 0.6;
+        return Math.min(tocDropdown.scrollHeight, maxViewportHeight);
+      };
 
-      closeToc();
-    }
-  });
-
-  // Close TOC when clicking outside
-  document.addEventListener('click', (e) => {
-    if (isTocOpen && !island?.contains(e.target)) {
-      isTocOpen = false;
-      closeToc();
-    }
-  });
-
-  // Prevent closing when clicking inside the dropdown links
-  tocDropdown?.addEventListener('click', (e) => {
-    e.stopPropagation();
-  });
-
-  // Scroll & Progress Logic
-  function updateProgress() {
-    const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
-    const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-    const scrolled = (winScroll / height) * 100;
-    
-    
-    if (progressCircle) {
-      progressCircle.setAttribute('stroke-dasharray', `${scrolled}, 100`);
-    }
-  }
-
-  let headerObserver = null;
-
-  function initDynamicProgressBar() {
-    const container = document.getElementById('dynamic-island-container');
-    const header = document.getElementById('blog-header');
-    
-    if (!container || !header) {
-      console.warn('DynamicProgressBar: dynamic-island-container or blog-header not found');
-      return;
-    }
-
-    if (headerObserver) {
-      headerObserver.disconnect();
-    }
-
-    headerObserver = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (!entry.isIntersecting) {
-            container.classList.remove('opacity-0', 'translate-y-[-20px]', 'pointer-events-none');
-            if (isTocOpen) {
-              isTocOpen = false;
-              closeToc();
-            }
-          } else {
-            container.classList.add('opacity-0', 'translate-y-[-20px]', 'pointer-events-none');
-          }
+      const animateTocHeight = (opening : boolean) => {
+        if (!tocDropdown) return;
+        const startHeight = tocDropdown.offsetHeight;
+        const targetHeight = opening ? clampTocHeight() : 0;
+        tocDropdown.style.maxHeight = `${startHeight}px`;
+        requestAnimationFrame(() => {
+          tocDropdown.style.maxHeight = `${targetHeight}px`;
         });
-      },
-      {
-        threshold: 0,
-        rootMargin: '0px',
-      }
-    );
+      };
 
-    headerObserver.observe(header);
-  }
+      const playSpring = (direction : 'open' | 'close') => {
+        if (!dynamicContent) return;
+        dynamicContent.classList.remove('spring-open', 'spring-close');
+        requestAnimationFrame(() => {
+          dynamicContent.classList.add(direction === 'open' ? 'spring-open' : 'spring-close');
+        });
+      };
 
-  window.addEventListener('scroll', updateProgress);
-  window.addEventListener('resize', () => {
-    updateProgress();
-    if (isTocOpen && tocDropdown) {
-      tocDropdown.style.maxHeight = `${clampTocHeight()}px`;
-      setDropdownWidth(true);
-      const targetWidth = measureExpandedWidth();
-      if (dynamicContent) {
-        dynamicContent.style.width = `${targetWidth}px`;
-      }
-    }
-  });
-
-  updateProgress();
-
-  dynamicContent?.addEventListener('animationend', () => {
-    dynamicContent.classList.remove('spring-open', 'spring-close');
-  });
-
-  dynamicContent?.addEventListener('transitionend', (e) => {
-    if (e.propertyName === 'width' && !isTocOpen) {
-      dynamicContent.style.width = '';
-    }
-  });
-
-  if (document.readyState === 'loading') {
-				document.addEventListener('DOMContentLoaded', initDynamicProgressBar);
+      const openToc = () => {
         
-			} else {
-				initDynamicProgressBar();
-			}
+        island?.classList.add('open');
+        playSpring('open');
+        const collapsedWidth = measureCollapsedWidth();
+        const targetWidth = measureExpandedWidth();
+        setDropdownWidth(true);
+        animateTocHeight(true);
+        if (dynamicContent) {
+          (dynamicContent as HTMLElement).style.width = `${collapsedWidth}px`;
+          requestAnimationFrame(() => {
+            (dynamicContent as HTMLElement).style.width = `${targetWidth}px`;
+          });
+        }
+        tocDropdown?.classList.add('opacity-100', 'scale-y-100');
+        tocDropdown?.classList.remove('opacity-0', 'scale-y-95', 'pointer-events-none');
+        tocDropdown?.setAttribute('aria-hidden', 'false');
+      };
+      const closeToc = () => {
+        island?.classList.remove('open');
+        playSpring('close');
+        const startWidth = (dynamicContent as HTMLElement).offsetWidth ?? 0;
+        const targetWidth = measureCollapsedWidth();
+        animateTocHeight(false);
+        if (dynamicContent) {
+          (dynamicContent as HTMLElement).style.width = `${startWidth}px`;
+          requestAnimationFrame(() => {
+            (dynamicContent as HTMLElement).style.width = `${targetWidth}px`;
+            setDropdownWidth(false);
+          });
+        } else {
+          setDropdownWidth(false);
+        }
+        tocDropdown?.classList.remove('opacity-100', 'scale-y-100');
+        tocDropdown?.classList.add('opacity-0', 'scale-y-95', 'pointer-events-none');
+        tocDropdown?.setAttribute('aria-hidden', 'true');
+      };
+      // Toggle TOC
+      island?.addEventListener('click', (e) => {
+        e.stopPropagation();
 
-  document.addEventListener('astro:after-swap', () => {
-    initDynamicProgressBar();
-    updateProgress();
+        isTocOpen = !isTocOpen;
+        if (isTocOpen) {
+          openToc();
+        } else {
+
+          closeToc();
+        }
+      });
+
+      // Close TOC when clicking outside
+      document.addEventListener('click', (e : MouseEvent) => {
+        if (isTocOpen && !island?.contains(e.target as Node)) {
+          isTocOpen = false;
+          closeToc();
+        }
+      });
+
+      // Prevent closing when clicking inside the dropdown links
+      tocDropdown?.addEventListener('click', (e) => {
+        e.stopPropagation();
+      });
+
+      // Scroll & Progress Logic
+      function updateProgress() {
+        const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+        const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+        const scrolled = (winScroll / height) * 100;
+        
+        
+        if (progressCircle) {
+          progressCircle.setAttribute('stroke-dasharray', `${scrolled}, 100`);
+        }
+      }
+
+      let headerObserver : IntersectionObserver | null = null;
+
+      function initDynamicProgressBar() {
+        const container = document.getElementById('dynamic-island-container');
+        const header = document.getElementById('blog-header');
+        
+        if (!container || !header) {
+          console.warn('DynamicProgressBar: dynamic-island-container or blog-header not found');
+          return;
+        }
+
+        if (headerObserver) {
+          headerObserver.disconnect();
+        }
+
+        headerObserver = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (!entry.isIntersecting) {
+                container.classList.remove('opacity-0', 'translate-y-[-20px]', 'pointer-events-none');
+                if (isTocOpen) {
+                  isTocOpen = false;
+                  closeToc();
+                }
+              } else {
+                container.classList.add('opacity-0', 'translate-y-[-20px]', 'pointer-events-none');
+              }
+            });
+          },
+          {
+            threshold: 0,
+            rootMargin: '0px',
+          }
+        );
+
+        headerObserver.observe(header);
+      }
+
+      window.addEventListener('scroll', updateProgress);
+      window.addEventListener('resize', () => {
+        updateProgress();
+        if (isTocOpen && tocDropdown) {
+          tocDropdown.style.maxHeight = `${clampTocHeight()}px`;
+          setDropdownWidth(true);
+          const targetWidth = measureExpandedWidth();
+          if (dynamicContent) {
+            (dynamicContent as HTMLElement).style.width = `${targetWidth}px`;
+          }
+        }
+      });
+
+      updateProgress();
+      initDynamicProgressBar();
+
+
+      dynamicContent?.addEventListener('animationend', () => {
+        dynamicContent.classList.remove('spring-open', 'spring-close');
+      });
+
+      dynamicContent?.addEventListener('transitionend', (e) => {
+        if ((e as TransitionEvent).propertyName === 'width' && !isTocOpen) {
+          (dynamicContent as HTMLElement).style.width = '';
+        }
+      });
+  }
+  
+  document.addEventListener('astro:page-load', () => {
+    console.log('astro:page-load');
+    init();
   });
 </script>
 

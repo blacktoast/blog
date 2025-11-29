@@ -12,7 +12,7 @@ import type { MarkdownHeading } from 'astro';
 
 type BlogData = CollectionEntry<'blog'>['data'];
 type PebbleData = CollectionEntry<'pebbles'>['data'] & { heroImage?: undefined };
-type Props = (BlogData | PebbleData) & { ogImage?: string; headings: MarkdownHeading[] };
+type Props = (BlogData | PebbleData) & { ogImage?: string; headings?: MarkdownHeading[] };
 
 const { title, description, pubDate, updatedDate, heroImage, tags = [], ogImage, headings } = Astro.props as Props;
 ---
@@ -24,7 +24,7 @@ const { title, description, pubDate, updatedDate, heroImage, tags = [], ogImage,
 	 modDatetime={updatedDate ?? null}
 	 ogImage={ogImage || (heroImage ? heroImage.src : undefined)}
 >
-	<DynamicProgressBar title={title} headings={headings} />
+	<DynamicProgressBar title={title} headings={headings ?? []} />
 	<Header id="blog-header" />
 	<BlurTop />
 	<main >
