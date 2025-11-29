@@ -221,7 +221,10 @@ const { title, headings } = Astro.props;
           display: "block",
           scale: 1,
           pointerEvents: "auto"
-        }, { duration: 0.4, ease: [0.22, 1, 0.36, 1] });
+        }, { duration: 0.4, ease: [0.22, 1, 0.36, 1] }).finished.then(() => {
+          // TOC가 열린 후 현재 active heading으로 indicator 이동
+          moveShellIndicator(currentActiveSlug);
+        });
 
       } else {
         island.classList.remove('open');
@@ -272,6 +275,8 @@ const { title, headings } = Astro.props;
       })
       .filter((el): el is HTMLElement => Boolean(el));
 
+    let currentActiveSlug: string | null = headingTargets[0]?.id ?? null;
+
     const moveShellIndicator = (slug: string | null) => {
       if (!shellIndicator || !tocNav) return;
       if (!slug) {
@@ -288,11 +293,10 @@ const { title, headings } = Astro.props;
       const linkRect = activeLink.getBoundingClientRect();
       const indicatorRect = shellIndicator.getBoundingClientRect();
       const offset = linkRect.top - navRect.top + (linkRect.height - indicatorRect.height) / 2;
-      
 
       animate(shellIndicator, { 
         y: offset, 
-        opacity: offset ===0 ? 0 : 1 
+        opacity: offset === 0 ? 0 : 1 
       }, { 
         type: "spring", 
         stiffness: 300, 
@@ -304,22 +308,24 @@ const { title, headings } = Astro.props;
       if (!headingTargets.length) return;
       
       const triggerY = window.innerHeight * 0.3;
-      let currentSlug: string | null = headingTargets[0].id;
+      currentActiveSlug = headingTargets[0].id;
       
       for (const el of headingTargets) {
         const rect = el.getBoundingClientRect();
         if (rect.top <= triggerY) {
-          currentSlug = el.id;
+          currentActiveSlug = el.id;
         } else {
           break;
         }
       }
 
       tocLinks.forEach((link) => {
-        const isActive = link.dataset.slug === currentSlug;
+        const isActive = link.dataset.slug === currentActiveSlug;
         link.classList.toggle('toc-active', isActive);
       });
-      moveShellIndicator(currentSlug);
+      if (isTocOpen) {
+        moveShellIndicator(currentActiveSlug);
+      }
     };
 
     window.addEventListener('scroll', updateActiveHeading, { passive: true });
