@@ -333,9 +333,9 @@ async function synchronizePublishedNotes(
     const rewrittenBody = ensureTrailingNewline(
       trimLeadingBlankLines(transformedBody)
     );
-    
-    const bodyWithToc = `## Table of contents\n\n${rewrittenBody}`;
-    const documentContent = `${serializeBlogFrontmatter(blogFrontmatter)}\n${bodyWithToc}`;
+
+    // const bodyWithToc = `## Table of contents\n\n${rewrittenBody}`;
+    const documentContent = `${serializeBlogFrontmatter(blogFrontmatter)}\n${rewrittenBody}`;
 
     await writeFile(destinationPath, documentContent, "utf8");
     logSyncStep("synchronizePublishedNotes:note-written", {

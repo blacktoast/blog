@@ -5,7 +5,6 @@ import mdx from "@astrojs/mdx";
 import sitemap from "@astrojs/sitemap";
 import { defineConfig } from "astro/config";
 import remarkToc from "remark-toc";
-import remarkCollapse from "remark-collapse";
 import remarkBreaks from "remark-breaks";
 import {
   transformerNotationDiff,
@@ -28,11 +27,7 @@ export default defineConfig({
   adapter: cloudflare(),
 
   markdown: {
-    remarkPlugins: [
-      remarkBreaks,
-      remarkToc,
-      [remarkCollapse, { test: "Table of contents" }],
-    ],
+    remarkPlugins: [remarkBreaks, remarkToc],
     shikiConfig: {
       themes: { light: "min-light", dark: "night-owl" },
       defaultColor: false,
