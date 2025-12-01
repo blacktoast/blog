@@ -13,6 +13,7 @@ export interface Props {
   pubDatetime?: Date;
   modDatetime?: Date | null;
   scrollSmooth?: boolean;
+  isMain?: boolean;
 }
 
 const {
@@ -25,6 +26,7 @@ const {
   pubDatetime,
   modDatetime,
   scrollSmooth = false,
+  isMain = false
 } = Astro.props;
 
 const ogImagePath = ogImage.startsWith('/') ? ogImage : `/${ogImage}`;
@@ -67,6 +69,24 @@ const structuredData = {
       href="/fonts/SUIT-Variable.woff2"
       crossorigin="anonymous"
     />
+    {
+      isMain && (
+      <link
+      rel="preload"
+      as="font"
+      type="font/woff2"
+      href="/fonts/home-hello-en.woff2"
+      crossorigin="anonymous"
+     />
+      <link
+      rel="preload"
+      as="font"
+      type="font/woff2"
+      href="/fonts/en-blog.woff2"
+      crossorigin="anonymous"
+      />
+      )
+    }
     <link rel="canonical" href={canonicalURL} />
     <meta name="generator" content={Astro.generator} />
 

@@ -5,7 +5,7 @@ import Layout from '@/layouts/Layout.astro';
 import { Icon } from 'astro-icon/components';
 
 ---
-<Layout>
+<Layout isMain={true}>
 	<Header />
 		<main class="mt-4"> 
 
@@ -140,7 +140,7 @@ import { Icon } from 'astro-icon/components';
 	}
 	
 	.special-font[data-lang="zh"] {
-		font-family: 'JPLogo', sans-serif;
+		font-family: 'ZHLogo', sans-serif;
 		font-weight: normal;
 	}
 	
@@ -205,7 +205,7 @@ import { Icon } from 'astro-icon/components';
 		const titles = [
 			{ text: "Retto's blog", flag: '🇺🇸', lang: 'en' },    // 영어
 			{ text: 'ラッコのブログ', flag: '🇯🇵', lang: 'ja' },    // 일본어
-			{ text: '海獺的博客', flag: '🇨🇳', lang: 'zh' },      // 중국어
+			{ text: '海獭的博客', flag: '🇨🇳', lang: 'zh' },      // 중국어
 			{ text: 'Le Blog de Loutre', flag: '🇫🇷', lang: 'fr' } ,   // 프랑스어
 			{ text: "Sjøoter's Blog", flag: '🇳🇴', lang: 'no' } ,    // 노르웨이어
 		];
@@ -214,7 +214,7 @@ import { Icon } from 'astro-icon/components';
 		const fontWarmupSpecs = {
 			en: '700 20px "en-blog"',
 			ja: '900 20px "JPLogo"',
-			zh: '400 20px "JPLogo"',
+			zh: '400 20px "ZHLogo"',
 			fr: '700 20px "FRLogo"',
 			no: '700 20px "FRLogo"',
 		};
