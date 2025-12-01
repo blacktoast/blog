@@ -53,6 +53,7 @@ type ImageReplacement = {
 type PendingImage = {
   readonly fileName: string;
   readonly sourcePath: string;
+  readonly resize?: number;
 };
 
 export type ProcessEmbeddedImagesOptions = {
@@ -269,6 +270,14 @@ export async function processEmbeddedImages(
     if (targetPath.length === 0) {
       continue;
     }
+    const requestedSize = parts[1]?.trim();
+    const resizeValue = requestedSize
+      ? Number.parseInt(requestedSize, 10)
+      : undefined;
+    const resize =
+      typeof resizeValue === "number" && Number.isFinite(resizeValue) && resizeValue > 0
+        ? resizeValue
+        : undefined;
     const resolvedPath = await resolveImageReference(
       targetPath,
       uniqueBaseDirectories
@@ -303,8 +312,9 @@ export async function processEmbeddedImages(
       targetPath,
       resolvedPath,
       outputRelativePath: relativePath,
+      resize,
     });
-    pendingImages.push({ fileName, sourcePath: resolvedPath });
+    pendingImages.push({ fileName, sourcePath: resolvedPath, resize });
     index += 1;
   }
   if (pendingImages.length === 0) {
@@ -318,12 +328,17 @@ export async function processEmbeddedImages(
   await rm(noteAssetDirectory, { recursive: true, force: true });
   await mkdir(noteAssetDirectory, { recursive: true });
   for (const image of pendingImages) {
-    await sharp(image.sourcePath)
+    let pipeline = sharp(image.sourcePath);
+    if (image.resize !== undefined) {
+      pipeline = pipeline.resize(image.resize, image.resize, { fit: "cover" });
+    }
+    await pipeline
       .webp({ quality: WEBP_QUALITY })
       .toFile(join(noteAssetDirectory, image.fileName));
     logImageStep("processEmbeddedImages:converted-image", {
       sourcePath: image.sourcePath,
       destinationPath: join(noteAssetDirectory, image.fileName),
+      resize: image.resize,
     });
   }
   let rewritten = "";
