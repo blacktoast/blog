@@ -54,6 +54,12 @@ type BlogEntry = {
   metadata: NoteMetadata;
 };
 
+type PebbleEntry = {
+  slug: string;
+  outputPath: string;
+  metadata: NoteMetadata;
+};
+
 type BlogFrontmatter = {
   title: string;
   description: string;
@@ -69,9 +75,11 @@ type SyncResult = {
 
 type LinkResolutionContext = {
   blogReferenceMap: Map<string, BlogEntry>;
+  pebbleReferenceMap: Map<string, PebbleEntry>;
   sourceReferenceMap: Map<string, NoteDocument>;
   rootDir: string;
   blogOutputDir: string;
+  pebbleOutputDir: string;
   rootLookupCache: Map<string, RootLookupResult>;
 };
 
@@ -112,6 +120,7 @@ function serializeBlogFrontmatter(frontmatter: BlogFrontmatter): string {
 async function lookupNoteInRoot(
   rootDir: string,
   blogOutputDir: string,
+  pebbleOutputDir: string,
   referenceId: string,
   cache: Map<string, RootLookupResult>
 ): Promise<RootLookupResult> {
@@ -122,6 +131,7 @@ async function lookupNoteInRoot(
   const result = await findNoteByReferenceId(
     rootDir,
     blogOutputDir,
+    pebbleOutputDir,
     referenceId
   );
   cache.set(referenceId, result);
@@ -131,12 +141,17 @@ async function lookupNoteInRoot(
 async function findNoteByReferenceId(
   rootDir: string,
   blogOutputDir: string,
+  pebbleOutputDir: string,
   referenceId: string
 ): Promise<RootLookupResult> {
   try {
     const normalizedReferenceId = normalizeReferenceId(referenceId);
     const slugReferenceId = toSlug(referenceId);
-    const files = await collectMarkdownFiles([rootDir, blogOutputDir]);
+    const files = await collectMarkdownFiles([
+      rootDir,
+      blogOutputDir,
+      pebbleOutputDir,
+    ]);
     for (const filePath of files) {
       const rawContent = await readFile(filePath, "utf8");
       const { frontmatter, body } = parseFrontmatter(rawContent);
@@ -224,9 +239,26 @@ async function resolveLinkReference(
       label: sourceNote.metadata.title,
     };
   }
+  let pebbleEntry = context.pebbleReferenceMap.get(referenceId);
+  if (pebbleEntry === undefined) {
+    pebbleEntry = context.pebbleReferenceMap.get(normalizedReferenceId);
+  }
+  if (pebbleEntry === undefined) {
+    pebbleEntry = context.pebbleReferenceMap.get(slugReferenceId);
+  }
+  if (pebbleEntry === undefined) {
+    pebbleEntry = context.pebbleReferenceMap.get(lowerReferenceId);
+  }
+  if (pebbleEntry !== undefined) {
+    return {
+      url: `/pebbles/${pebbleEntry.slug.normalize("NFC")}`,
+      label: pebbleEntry.metadata.title,
+    };
+  }
   const rootLookup = await lookupNoteInRoot(
     context.rootDir,
     context.blogOutputDir,
+    context.pebbleOutputDir,
     referenceId,
     context.rootLookupCache
   );
@@ -235,6 +267,13 @@ async function resolveLinkReference(
       const slug = basename(rootLookup.filePath, extname(rootLookup.filePath));
       return {
         url: `/blog/${slug}`,
+        label: rootLookup.title,
+      };
+    }
+    if (isPathInDirectory(rootLookup.filePath, context.pebbleOutputDir)) {
+      const slug = basename(rootLookup.filePath, extname(rootLookup.filePath));
+      return {
+        url: `/pebbles/${slug.normalize("NFC")}`,
         label: rootLookup.title,
       };
     }
@@ -394,11 +433,49 @@ async function discoverExistingBlogEntries(
   return entries;
 }
 
+async function discoverExistingPebbleEntries(
+  pebbleDir: string
+): Promise<PebbleEntry[]> {
+  const existingPaths = await collectMarkdownFiles([pebbleDir]);
+  const entries: PebbleEntry[] = [];
+  for (const filePath of existingPaths) {
+    const rawContent = await readFile(filePath, "utf8");
+    const { frontmatter } = parseFrontmatter(rawContent);
+    const title = extractTitle(frontmatter, filePath);
+    const tags = extractTags(frontmatter);
+    const created =
+      extractDate(frontmatter, "pubDate") ??
+      extractDate(frontmatter, "created");
+    const modified =
+      extractDate(frontmatter, "updatedDate") ??
+      extractDate(frontmatter, "modified");
+    const slug = basename(filePath, extname(filePath));
+    const referenceIds = buildReferenceIds(title, filePath, slug);
+    const metadata: NoteMetadata = {
+      title,
+      slug,
+      created,
+      modified,
+      published: true,
+      tags,
+      referenceIds,
+    };
+    entries.push({
+      slug,
+      outputPath: filePath,
+      metadata,
+    });
+  }
+  return entries;
+}
+
 function buildLinkResolutionContext(
   publishedNotes: readonly NoteDocument[],
   existingBlogEntries: readonly BlogEntry[],
+  existingPebbleEntries: readonly PebbleEntry[],
   rootDir: string,
-  blogOutputDir: string
+  blogOutputDir: string,
+  pebbleOutputDir: string
 ): LinkResolutionContext {
   const blogReferenceMap = new Map<string, BlogEntry>();
   for (const entry of existingBlogEntries) {
@@ -422,11 +499,24 @@ function buildLinkResolutionContext(
     sourceReferenceMap.set(slugTitle, note);
     sourceReferenceMap.set(note.metadata.title.toLowerCase(), note);
   }
+  const pebbleReferenceMap = new Map<string, PebbleEntry>();
+  for (const pebble of existingPebbleEntries) {
+    for (const refId of pebble.metadata.referenceIds) {
+      pebbleReferenceMap.set(refId, pebble);
+    }
+    const normalizedTitle = normalizeReferenceId(pebble.metadata.title);
+    const slugTitle = toSlug(pebble.metadata.title);
+    pebbleReferenceMap.set(normalizedTitle, pebble);
+    pebbleReferenceMap.set(slugTitle, pebble);
+    pebbleReferenceMap.set(pebble.metadata.title.toLowerCase(), pebble);
+  }
   return {
     blogReferenceMap,
+    pebbleReferenceMap,
     sourceReferenceMap,
     rootDir,
     blogOutputDir,
+    pebbleOutputDir,
     rootLookupCache: new Map(),
   };
 }
@@ -478,8 +568,12 @@ async function run(): Promise<void> {
       loadNoteDocument(config.rootDir, filePath)
     )
   );
+  const pebbleOutputDir = resolve(config.blogOutputDir, "../pebbles");
   const existingBlogEntries = await discoverExistingBlogEntries(
     config.blogOutputDir
+  );
+  const existingPebbleEntries = await discoverExistingPebbleEntries(
+    pebbleOutputDir
   );
   const usedSlugs = new Set<string>();
   const entriesToRemove = new Set<string>();
@@ -504,8 +598,10 @@ async function run(): Promise<void> {
   const context = buildLinkResolutionContext(
     publishedNotes,
     filteredExistingEntries,
+    existingPebbleEntries,
     config.rootDir,
-    config.blogOutputDir
+    config.blogOutputDir,
+    pebbleOutputDir
   );
   const syncResult = await synchronizePublishedNotes(
     publishedNotes,
