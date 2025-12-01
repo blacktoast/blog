@@ -97,7 +97,13 @@ const { title, headings } = Astro.props;
 <script>
   import { animate, scroll, inView } from "motion";
 
+  let cleanupFunctions: Array<() => void> = [];
+
   const init = () => {
+    // 이전 리스너 정리
+    cleanupFunctions.forEach(cleanup => cleanup());
+    cleanupFunctions = [];
+
     // 필수 요소
     const island = document.getElementById('dynamic-island');
     const container = document.getElementById('dynamic-island-container');
@@ -118,9 +124,17 @@ const { title, headings } = Astro.props;
 
     // 1. Scroll Progress (항상 실행)
     if (progressCircle) {
-      scroll((progress: number) => {
+      const scrollStop = scroll((progress: number) => {
         const scrolled = progress * 100;
         progressCircle.setAttribute('stroke-dasharray', `${scrolled}, 100`);
+      });
+      
+      cleanupFunctions.push(() => {
+        if (scrollStop && typeof (scrollStop as any).stop === 'function') {
+          (scrollStop as any).stop();
+        } else if (typeof scrollStop === 'function') {
+          scrollStop();
+        }
       });
     }
 
@@ -141,7 +155,7 @@ const { title, headings } = Astro.props;
       };
       checkInitialVisibility();
 
-      inView(header, () => {
+      const inViewStop = inView(header, () => {
         animate(container, { 
           opacity: [0], 
           scale: [1, 0.8],
@@ -159,6 +173,13 @@ const { title, headings } = Astro.props;
             pointerEvents: "auto" 
           }, { duration: 0.3 });
         };
+      });
+      cleanupFunctions.push(() => {
+        if (inViewStop && typeof (inViewStop as any).stop === 'function') {
+          (inViewStop as any).stop();
+        } else if (typeof inViewStop === 'function') {
+          inViewStop();
+        }
       });
     }
 
@@ -310,33 +331,55 @@ const { title, headings } = Astro.props;
     };
 
     // Event listeners
-    island.addEventListener('click', (e) => {
+    const handleIslandClick = (e: MouseEvent) => {
       e.stopPropagation();
       toggleToc(!isTocOpen);
+    };
+    island.addEventListener('click', handleIslandClick);
+    cleanupFunctions.push(() => {
+      island.removeEventListener('click', handleIslandClick);
     });
 
-    document.addEventListener('click', (e) => {
+    const handleDocumentClick = (e: MouseEvent) => {
       if (isTocOpen && !island.contains(e.target as Node)) {
         toggleToc(false);
       }
+    };
+    document.addEventListener('click', handleDocumentClick);
+    cleanupFunctions.push(() => {
+      document.removeEventListener('click', handleDocumentClick);
     });
 
-    tocDropdown.addEventListener('click', (e) => {
+    const handleTocDropdownClick = (e: MouseEvent) => {
       e.stopPropagation();
+    };
+    tocDropdown.addEventListener('click', handleTocDropdownClick);
+    cleanupFunctions.push(() => {
+      tocDropdown.removeEventListener('click', handleTocDropdownClick);
     });
 
     window.addEventListener('scroll', updateActiveHeading, { passive: true });
+    cleanupFunctions.push(() => {
+      window.removeEventListener('scroll', updateActiveHeading);
+    });
     updateActiveHeading();
     
-    window.addEventListener('resize', () => {
+    const handleResize = () => {
       if (isTocOpen) {
         animate(dynamicContent, { width: `${measureExpandedWidth()}px` }, { duration: 0 });
       }
+    };
+    window.addEventListener('resize', handleResize);
+    cleanupFunctions.push(() => {
+      window.removeEventListener('resize', handleResize);
     });
   };
 
-  document.addEventListener('astro:page-load', () => {
-    init();
+  document.addEventListener('astro:page-load', init);
+
+  document.addEventListener('astro:before-swap', () => {
+    cleanupFunctions.forEach(cleanup => cleanup());
+    cleanupFunctions = [];
   });
 </script>
 

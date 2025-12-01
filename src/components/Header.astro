@@ -47,7 +47,7 @@ const { id } = Astro.props;
 					<Icon name="lucide:menu" class="w-6 h-6 transition-opacity duration-200" />
 					<span class="sr-only">메뉴 열기</span>
 				</summary>
-				<div class="absolute right-0 mt-2 w-28 rounded-xl border border-border bg-background/95 dark:bg-background/90 backdrop-blur shadow-lg p-2 flex flex-col gap-1 z-50">
+				<div id="mobile-menu-content" class="absolute right-0 mt-2 w-28 rounded-xl border border-border bg-background/95 dark:bg-background/90 backdrop-blur shadow-lg p-2 flex flex-col gap-1 z-50 opacity-0">
 					<HeaderLink href="/" class="py-2 px-3 rounded-lg text-inherit no-underline transition-colors duration-200 hover:text-accent focus-visible:text-accent">Home</HeaderLink>
 					<HeaderLink href="/blog" class="py-2 px-3 rounded-lg text-inherit no-underline transition-colors duration-200 hover:text-accent focus-visible:text-accent">Blog</HeaderLink>
 					<HeaderLink href="/pebbles" class="py-2 px-3 rounded-lg text-inherit no-underline transition-colors duration-200 hover:text-accent focus-visible:text-accent">🪨</HeaderLink>
@@ -67,17 +67,121 @@ const { id } = Astro.props;
 </style>
 
 <script>
-	document.addEventListener('click', function(event: MouseEvent) {
-		if (!event.target) return;
-		const mobileMenu = document.getElementById('mobile-menu');
-		if (!mobileMenu) return;
+import { animate } from "motion";
+
+let cleanupFunctions: Array<() => void> = [];
+
+const init = () => {
+	// 이전 리스너 정리
+	cleanupFunctions.forEach(cleanup => cleanup());
+	cleanupFunctions = [];
+
+	const mobileMenu = document.getElementById('mobile-menu');
+	const mobileMenuContent = document.getElementById('mobile-menu-content');
+	if (!mobileMenu || !mobileMenuContent) return;
+
+	let currentAnimation: ReturnType<typeof animate> | null = null;
+	let isClosing = false;
+
+	const openMenu = () => {
+		// 이전 애니메이션 취소
+		if (currentAnimation) {
+			currentAnimation.stop();
+		}
+
+		mobileMenuContent.style.opacity = '0';
+		mobileMenuContent.style.transform = 'translateY(-8px) scale(0.95)';
+
+		requestAnimationFrame(() => {
+			currentAnimation = animate(mobileMenuContent, {
+				opacity: 1,
+				transform: 'translateY(0) scale(1)',
+			}, {
+				duration: 0.2,
+				ease: [0.22, 1, 0.36, 1],
+			});
+		});
+	};
+
+	const closeMenu = () => {
+		if (isClosing) return;
+		isClosing = true;
+
+		// 이전 애니메이션 취소
+		if (currentAnimation) {
+			currentAnimation.stop();
+		}
+
+		// 닫기 애니메이션 실행
+		currentAnimation = animate(mobileMenuContent, {
+			opacity: 0,
+			transform: 'translate3d(40px, -80px, 0) scale(0.1)',
+		}, {
+			duration: 0.3,
+			ease: [0.22, 1, 0.36, 1],
+		});
 		
+		// 애니메이션 완료 후 open 속성 제거
+		currentAnimation.finished.then(() => {
+			mobileMenu.removeAttribute('open');
+			isClosing = false;
+		});
+	};
+
+	// toggle 이벤트로 열림/닫힘 감지
+	const handleToggle = () => {
+		if (mobileMenu.hasAttribute('open')) {
+			openMenu();
+		} else if (!isClosing) {
+			// 닫힐 때 (isClosing이 false일 때만 - 외부에서 직접 닫힌 경우)
+			closeMenu();
+		}
+	};
+	mobileMenu.addEventListener('toggle', handleToggle);
+	cleanupFunctions.push(() => {
+		mobileMenu.removeEventListener('toggle', handleToggle);
+	});
+
+	// summary 클릭 시 기본 동작 처리
+	const summary = mobileMenu.querySelector('summary');
+	if (summary) {
+		const handleSummaryClick = (event: MouseEvent) => {
+			// 이미 열려있으면 닫기 애니메이션 실행
+			if (mobileMenu.hasAttribute('open')) {
+				event.preventDefault();
+				closeMenu();
+			}
+		};
+		summary.addEventListener('click', handleSummaryClick);
+		cleanupFunctions.push(() => {
+			summary.removeEventListener('click', handleSummaryClick);
+		});
+	}
+
+	// 외부 클릭 시 메뉴 닫기
+	const handleDocumentClick = (event: MouseEvent) => {
+		console.log('click in header');
+		if (!event.target) return;
 		const target = event.target as Node;
 		const isClickInside = mobileMenu.contains(target);
 		if (!isClickInside && mobileMenu.hasAttribute('open')) {
-			mobileMenu.removeAttribute('open');
+			closeMenu();
 		}
+	};
+	document.addEventListener('click', handleDocumentClick);
+	cleanupFunctions.push(() => {
+		document.removeEventListener('click', handleDocumentClick);
 	});
+};
+
+// 페이지 로드 시 초기화
+document.addEventListener('astro:page-load', init);
+
+// 페이지 전환 전 정리
+document.addEventListener('astro:before-swap', () => {
+	cleanupFunctions.forEach(cleanup => cleanup());
+	cleanupFunctions = [];
+});
 </script>
 
 
