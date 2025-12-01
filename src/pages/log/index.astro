@@ -12,33 +12,41 @@ const logs = (await getCollection('log')).sort(
 	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
 );
 
-// Show logs for the latest available month
-const latestLog = logs[0];
-const recentLogs = latestLog 
-	? logs.filter((log) => 
-		log.data.pubDate.getFullYear() === latestLog.data.pubDate.getFullYear() && 
-		log.data.pubDate.getMonth() === latestLog.data.pubDate.getMonth()
-	  )
-	: [];
-
-const currentDisplayDate = latestLog ? latestLog.data.pubDate : new Date();
-const displayMonth = currentDisplayDate.toLocaleString('default', { month: 'long' });
-const displayYear = currentDisplayDate.getFullYear();
+// 최근 30개의 로그만 표시
+const recentLogs = logs.slice(0, 30);
 
 const years = [...new Set(logs.map((log) => log.data.pubDate.getFullYear()))].sort((a, b) => b - a);
+
+const formatMonthLabel = (date: Date) => `${date.getMonth() + 1}월`;
+const formatYearLabel = (date: Date) => `${date.getFullYear()}년`;
 ---
 
-<Layout title={`일지 - ${displayMonth} ${displayYear}`} description={SITE_DESCRIPTION}>
+<Layout title={`일지 - 최근 30개`} description={SITE_DESCRIPTION}>
 	<Header id="blog-header" />
 	<BlurTop />
 		<main class="w-full max-w-app mx-auto px-4">
 			<section class="mb-12">
-				<h1 class="text-3xl font-bold mb-8">{displayMonth} {displayYear}</h1>
-				<div class="space-y-0">
+				<!-- <h1 class="text-3xl font-bold mb-6">최근 30개 일지</h1> -->
+				<div class="space-y-2">
 					{
-						recentLogs.map((log) => (
-							<LogEntry log={log} />
-						))
+						recentLogs.map((log, idx) => {
+							const prev = idx > 0 ? recentLogs[idx - 1] : null;
+							const monthChanged =
+								!prev ||
+								prev.data.pubDate.getFullYear() !== log.data.pubDate.getFullYear() ||
+								prev.data.pubDate.getMonth() !== log.data.pubDate.getMonth();
+							return (
+								<>
+									{monthChanged && (
+										<div class="flex items-baseline gap-2 pt-6 pb-2 text-muted-foreground">
+											<div class="text-3xl font-semibold">{formatMonthLabel(log.data.pubDate)}</div>
+											<span class="text-lg">{formatYearLabel(log.data.pubDate)}</span>
+										</div>
+									)}
+									<LogEntry log={log} />
+								</>
+							);
+						})
 					}
 				</div>
 			</section>
