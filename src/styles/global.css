@@ -24,6 +24,13 @@
 }
 
 @font-face {
+  font-family: "ZHLogo";
+  src: url("/fonts/zh.woff2") format("woff2");
+  font-display: swap;
+  font-weight: 400;
+}
+
+@font-face {
   font-family: "HomeHello";
   src: url("/fonts/home-hello-en.woff2") format("woff2");
   font-weight: 500;
