@@ -9,7 +9,8 @@
     "astro": "astro",
     "sync": "bun run script/main.ts",
     "test": "bun test",
-    "deploy": "yarn build && npx wrangler deploy"
+    "deploy": "yarn build && npx wrangler deploy",
+    "doc:update": "yarn sync && git add . && git commit -m 'chore: update docs' && git push"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.5",
