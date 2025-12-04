@@ -11,14 +11,15 @@ import {
   transformerNotationHighlight,
   transformerNotationWordHighlight,
 } from "@shikijs/transformers";
-
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
 import cloudflare from "@astrojs/cloudflare";
-
 import { SITE } from "./src/config.ts";
-
 import tailwindcss from "@tailwindcss/vite";
-
 import icon from "astro-icon";
+
+// Import KaTeX CSS (required for rehype-katex)
+import "katex/dist/katex.min.css";
 
 // https://astro.build/config
 export default defineConfig({
@@ -27,7 +28,8 @@ export default defineConfig({
   adapter: cloudflare(),
 
   markdown: {
-    remarkPlugins: [remarkBreaks, remarkToc],
+    remarkPlugins: [remarkBreaks, remarkToc, remarkMath],
+    rehypePlugins: [rehypeKatex],
     shikiConfig: {
       themes: { light: "min-light", dark: "night-owl" },
       defaultColor: false,
