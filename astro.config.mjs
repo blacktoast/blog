@@ -18,9 +18,6 @@ import { SITE } from "./src/config.ts";
 import tailwindcss from "@tailwindcss/vite";
 import icon from "astro-icon";
 
-// Import KaTeX CSS (required for rehype-katex)
-import "katex/dist/katex.min.css";
-
 // https://astro.build/config
 export default defineConfig({
   site: SITE.url,
