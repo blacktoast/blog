@@ -61,7 +61,7 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: deploy --config apps/backend/wrangler.jsonc --minify
+          command: deploy --config wrangler.jsonc --minify
           workingDirectory: apps/backend
         env:
           D1_DATABASE_ID: ${{ secrets.D1_DATABASE_ID }}
