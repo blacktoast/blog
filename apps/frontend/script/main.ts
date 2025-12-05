@@ -28,7 +28,7 @@ import {
   formatYamlString,
   trimLeadingBlankLines,
   truncate,
-} from "./utils";
+} from "./utils/index.ts";
 import { type PathConfig, loadPathConfig } from "./get-path.ts";
 import { IS_DEBUG_MODE } from "./constants/debug.ts";
 import { processEmbeddedImages } from "./parse-image.ts";
@@ -572,9 +572,8 @@ async function run(): Promise<void> {
   const existingBlogEntries = await discoverExistingBlogEntries(
     config.blogOutputDir
   );
-  const existingPebbleEntries = await discoverExistingPebbleEntries(
-    pebbleOutputDir
-  );
+  const existingPebbleEntries =
+    await discoverExistingPebbleEntries(pebbleOutputDir);
   const usedSlugs = new Set<string>();
   const entriesToRemove = new Set<string>();
   for (const note of sourceNotes) {

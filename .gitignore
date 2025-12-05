@@ -29,3 +29,5 @@ pnpm-debug.log*
 # wrangler caches
 .wrangler/
 
+node_modules/
+dist/

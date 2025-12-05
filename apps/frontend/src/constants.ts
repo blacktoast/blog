@@ -5,7 +5,7 @@ import IconMail from "@/assets/icons/IconMail.svg";
 import IconGitHub from "@/assets/icons/IconGitHub.svg";
 import IconBrandX from "@/assets/icons/IconBrandX.svg";
 import IconLinkedin from "@/assets/icons/IconLinkedin.svg";
-import { SITE } from "@/config";
+import { SITE } from "./config";
 
 export const SITE_TITLE = "Astr";
 export const SITE_DESCRIPTION = "Retto's blog";
