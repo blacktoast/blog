@@ -2,8 +2,10 @@ import { Context, Next } from "hono";
 
 const ALLOWED_ORIGINS = [
   'https://www.haedal.blog',
+  'https://haedal.blog',
+  'https://www.headal.site',
+  'https://headal.site',
   'http://localhost:4321',
-  'https://localhost:4321'
 ];
 
 export function corsMiddleware() {
@@ -32,7 +34,7 @@ export function corsMiddleware() {
   };
 }
 
-function getCorsHeaders(origin: string | null): Record<string, string> {
+function getCorsHeaders(origin: string | undefined): Record<string, string> {
   if (origin && ALLOWED_ORIGINS.includes(origin)) {
     return {
       'Access-Control-Allow-Origin': origin,

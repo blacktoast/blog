@@ -1,21 +1,7 @@
 import { Hono } from "hono";
-import { cors } from "hono/cors";
 import reactionsRouter from "./routes/reactions.js";
 
 const app = new Hono();
-
-// CORS configuration
-app.use("*", cors({
-  origin: [
-    "https://www.haedal.blog",
-    "https://haedal.blog",
-    "https://www.headal.site",
-    "http://localhost:4321",
-  ],
-  allowMethods: ["GET", "POST", "OPTIONS"],
-  allowHeaders: ["Content-Type"],
-  credentials: true,
-}));
 
 app.get("/", (c) => {
   return c.json({ 
@@ -31,4 +17,3 @@ app.get("/", (c) => {
 app.route("/reactions", reactionsRouter);
 
 export default app;
-
