@@ -2,7 +2,15 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "backend",
   "main": "src/index.ts",
-  "compatibility_date": "2025-12-05"
+  "compatibility_date": "2025-12-05",
+  "d1_databases": [
+    {
+      "binding": "haedal_db",
+      "database_name": "haedal-db",
+      "database_id": "147846a7-b714-49aa-8fd3-c2462325ffb4",
+      "remote": true
+    }
+  ]
   // "compatibility_flags": [
   //   "nodejs_compat"
   // ],

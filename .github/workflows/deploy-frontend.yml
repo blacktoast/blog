@@ -1,0 +1,82 @@
+name: Deploy Frontend
+
+on:
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'apps/frontend/**'
+      - 'package.json'
+      - 'pnpm-workspace.yaml'
+      - '.github/workflows/deploy-frontend.yml'
+  pull_request:
+    branches: [ main, master ]
+    paths:
+      - 'apps/frontend/**'
+      - 'package.json'
+      - 'pnpm-workspace.yaml'
+      - '.github/workflows/deploy-frontend.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy Frontend to Cloudflare Workers
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: read
+      deployments: write
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 10.24.0
+          
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+          
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+            
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        
+      - name: Build frontend
+        run: |
+          cd apps/frontend
+          pnpm build
+          
+      - name: Deploy to Cloudflare Workers
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy --config apps/frontend/wrangler.jsonc
+          workingDirectory: apps/frontend
+          
+      - name: Deployment success notification
+        if: success()
+        run: |
+          echo "✅ Frontend deployed successfully!"
+          echo "🌐 Your site is live on Cloudflare Workers"
+          
+      - name: Deployment failure notification
+        if: failure()
+        run: |
+          echo "❌ Frontend deployment failed!"
+          echo "🔍 Check the logs above for details"
