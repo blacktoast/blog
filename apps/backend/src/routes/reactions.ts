@@ -61,7 +61,7 @@ app.get("/:contentType/:slug", async (c) => {
   const rawSlug = c.req.param("slug");
   const userHash = c.get("userHash");
 
-  // Decode URL-encoded slug
+  // Decode URL-encoded slug test?
   let slug: string;
   try {
     slug = decodeURIComponent(rawSlug);
