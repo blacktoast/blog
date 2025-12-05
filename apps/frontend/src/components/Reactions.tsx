@@ -16,7 +16,7 @@ export default function Reactions({ contentType, slug }: ReactionsProps) {
   const apiUrl = typeof window !== 'undefined' && 
     (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
     ? 'http://localhost:8787'
-    : 'https://backend.btoast.workers.dev/';
+    : 'https://backend.btoast.workers.dev';
 
   useEffect(() => {
     loadReactions();
