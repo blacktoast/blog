@@ -5,7 +5,7 @@ type CloudflareExecutionContext = {
   passThroughOnException?: () => void;
 };
 
-const astroWorker = (await import("../../../dist/_worker.js/index.js"))
+const astroWorker = (await import("../dist/_worker.js/index.js"))
   .default as {
   fetch(
     request: Request,
