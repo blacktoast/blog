@@ -8,13 +8,19 @@ import BlurTop from '../components/BlurTop.astro';
 import Layout from '@/layouts/Layout.astro';
 import { Icon } from 'astro-icon/components';
 import DynamicProgressBar from '../components/DynamicProgressBar.astro';
+import Reactions from '../components/Reactions.astro';
 import type { MarkdownHeading } from 'astro';
 
 type BlogData = CollectionEntry<'blog'>['data'];
 type PebbleData = CollectionEntry<'pebbles'>['data'] & { heroImage?: undefined };
-type Props = (BlogData | PebbleData) & { ogImage?: string; headings?: MarkdownHeading[] };
+type Props = (BlogData | PebbleData) & { 
+  ogImage?: string; 
+  headings?: MarkdownHeading[];
+  contentType?: 'blog' | 'pebbles';
+  slug?: string;
+};
 
-const { title, description, pubDate, updatedDate, heroImage, tags = [], ogImage, headings } = Astro.props as Props;
+const { title, description, pubDate, updatedDate, heroImage, tags = [], ogImage, headings, contentType = 'blog', slug } = Astro.props as Props;
 ---
 
 <Layout
@@ -64,6 +70,9 @@ const { title, description, pubDate, updatedDate, heroImage, tags = [], ogImage,
 					<hr />
 				</div>
 				<slot />
+			{slug && (
+				<Reactions contentType={contentType} slug={slug} />
+			)}
 			</div>
 		</article>
 	</main>

@@ -18,6 +18,6 @@ const ogImage = `/pebbles/og/${post.id}.png`;
 
 ---
 
-<BlogPost {...post.data} ogImage={ogImage} headings={headings}>
+<BlogPost {...post.data} ogImage={ogImage} headings={headings} contentType="pebbles" slug={post.id}>
 	<Content />
 </BlogPost>

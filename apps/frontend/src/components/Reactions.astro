@@ -1,0 +1,12 @@
+---
+import ReactionsClient from './Reactions.tsx';
+
+interface Props {
+  contentType: 'blog' | 'pebbles';
+  slug: string;
+}
+
+const { contentType, slug } = Astro.props;
+---
+
+<ReactionsClient client:load contentType={contentType} slug={slug} />

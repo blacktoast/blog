@@ -3,6 +3,19 @@
   "name": "backend",
   "main": "src/index.ts",
   "compatibility_date": "2025-12-05",
+  "compatibility_flags": ["nodejs_compat"],
+  "vars": {
+    "FRONTEND_URL": "https://www.haedal.blog",
+    "ENVIRONMENT": "production"
+  },
+  "env": {
+    "development": {
+      "vars": {
+        "FRONTEND_URL": "http://localhost:4321",
+        "ENVIRONMENT": "development"
+      }
+    }
+  },
   "d1_databases": [
     {
       "binding": "haedal_db",
@@ -11,36 +24,4 @@
       "remote": true
     }
   ]
-  // "compatibility_flags": [
-  //   "nodejs_compat"
-  // ],
-  // "vars": {
-  //   "MY_VAR": "my-variable"
-  // },
-  // "kv_namespaces": [
-  //   {
-  //     "binding": "MY_KV_NAMESPACE",
-  //     "id": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-  //   }
-  // ],
-  // "r2_buckets": [
-  //   {
-  //     "binding": "MY_BUCKET",
-  //     "bucket_name": "my-bucket"
-  //   }
-  // ],
-  // "d1_databases": [
-  //   {
-  //     "binding": "MY_DB",
-  //     "database_name": "my-database",
-  //     "database_id": ""
-  //   }
-  // ],
-  // "ai": {
-  //   "binding": "AI"
-  // },
-  // "observability": {
-  //   "enabled": true,
-  //   "head_sampling_rate": 1
-  // }
 }

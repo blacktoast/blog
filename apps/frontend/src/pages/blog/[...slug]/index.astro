@@ -19,6 +19,6 @@ const ogImage = post.data.heroImage
 	: `/blog/og/${post.id}.png`;
 ---
 
-<BlogPost {...post.data} ogImage={ogImage} headings={headings}>
+<BlogPost {...post.data} ogImage={ogImage} headings={headings} contentType="blog" slug={post.id}>
 	<Content />
 </BlogPost>
