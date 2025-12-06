@@ -1,5 +1,5 @@
 ---
-import ReactionsClient from './Reactions.tsx';
+import { ReactionParty } from './reaction-party';
 
 interface Props {
   contentType: 'blog' | 'pebbles';
@@ -9,4 +9,4 @@ interface Props {
 const { contentType, slug } = Astro.props;
 ---
 
-<ReactionsClient client:load contentType={contentType} slug={slug} />
+<ReactionParty client:load contentType={contentType} slug={slug} />
