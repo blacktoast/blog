@@ -71,7 +71,9 @@ const { title, description, pubDate, updatedDate, heroImage, tags = [], ogImage,
 				</div>
 				<slot />
 			{slug && (
-				<Reactions contentType={contentType} slug={slug} />
+				<div class="flex justify-end">
+					<Reactions contentType={contentType} slug={slug} />
+				</div>
 			)}
 			</div>
 		</article>
