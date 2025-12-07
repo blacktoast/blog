@@ -8,7 +8,7 @@
     "dev:backend": "cd apps/backend && pnpm dev",
     "build": "cd apps/frontend && pnpm build",
     "preview": "cd apps/frontend && pnpm preview",
-    "sync": "cd apps/frontend && pnpm sync",
+    "sync": "cd apps/frontend && pnpm doc:update",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

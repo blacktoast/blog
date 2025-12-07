@@ -39,7 +39,7 @@ function rateLimitMiddleware() {
       "unknown";
     const now = Date.now();
     const windowMs = 5 * 60 * 1000; // 5 minutes
-    const maxRequests = 100;
+    const maxRequests = 10;
 
     const current = rateLimitMap.get(ip);
     if (!current || now > current.resetTime) {
