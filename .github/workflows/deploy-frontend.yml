@@ -59,7 +59,7 @@ jobs:
       - name: Build frontend
         run: |
           cd apps/frontend
-          pnpm build
+          pnpm build:main
 
       - name: Deploy to Cloudflare Workers (main)
         uses: cloudflare/wrangler-action@v3
@@ -68,6 +68,11 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: deploy --config wrangler.jsonc --env main
           workingDirectory: apps/frontend
+
+      - name: Build frontend (personal)
+        run: |
+          cd apps/frontend
+          pnpm build:personal
 
       - name: Deploy to Cloudflare Workers (personal)
         uses: cloudflare/wrangler-action@v3
