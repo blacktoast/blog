@@ -3,6 +3,7 @@ import Header from '@/components/Header.astro';
 import Footer from '@/components/Footer.astro';
 import Layout from '@/layouts/Layout.astro';
 import { Icon } from 'astro-icon/components';
+const isPersonal = import.meta.env.PUBLIC_TYPE === 'personal';
 
 ---
 <Layout isMain={true}>
@@ -65,22 +66,35 @@ import { Icon } from 'astro-icon/components';
 								</div>
 							</div>
 						</a>
+						{isPersonal ? (
+							<a href="/log" class="section-card group p-3 rounded-lg border border-border bg-background/50 hover:bg-background/80 transition-all duration-200 hover:border-accent/50">
+								<div class="flex items-center gap-3">
+									<div class="icon-wrapper shrink-0 w-8 h-8 rounded-md bg-accent/10 group-hover:bg-accent/20 flex items-center justify-center transition-colors">
+										<Icon name="lucide:scroll-text" class="w-4 h-4" />
+									</div>
+									<div class="flex-1 min-w-0">
+										<h3 class="font-semibold text-sm text-foreground group-hover:text-accent transition-colors">Log</h3>
+										<p class="text-xs text-foreground/60 leading-snug mt-0.5">
+											Personal thoughts
+										</p>
+									</div>
+								</div>
+							</a>
+						) : null}
 
-						<a href="/log" class="section-card group p-3 rounded-lg border border-border bg-background/50 hover:bg-background/80 transition-all duration-200 hover:border-accent/50">
-							<div class="flex items-center gap-3">
-								<div class="icon-wrapper shrink-0 w-8 h-8 rounded-md bg-accent/10 group-hover:bg-accent/20 flex items-center justify-center transition-colors">
-									<Icon name="lucide:scroll-text" class="w-4 h-4" />
-								</div>
-								<div class="flex-1 min-w-0">
-									<h3 class="font-semibold text-sm text-foreground group-hover:text-accent transition-colors">Log</h3>
-									<p class="text-xs text-foreground/60 leading-snug mt-0.5">
-										Personal thoughts
-									</p>
-								</div>
-							</div>
-						</a>
-					</div>
 				</details>
+
+				{!isPersonal ? (
+					<p class="text-sm text-foreground/40 leading-relaxed mt-4">
+						Want to get closer to me or become better friends?
+						<br/>
+						Here's where you'll find my personal story. <a href="https://personal.haedal.blog/" class="text-accent">Click here</a>
+						<br/>
+						<span class="text-red-400/90 text-sm">
+							Disclaimer: This contains my personal story, so please don't click carelessly. 
+						</span>
+					</p>
+					) : null}
 			</div>
 			</section>
 		</main>

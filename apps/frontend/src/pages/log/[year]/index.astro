@@ -6,7 +6,7 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../../../constants';
 import { getCollection } from 'astro:content';
 import Layout from '@/layouts/Layout.astro';
 import BlurTop from '@/components/BlurTop.astro';
-
+const isPersonal = import.meta.env.PUBLIC_TYPE === 'personal';
 export async function getStaticPaths() {
 	const logs = await getCollection('log');
 	const years = [...new Set(logs.map((log) => log.data.pubDate.getFullYear()))];
@@ -28,6 +28,7 @@ const monthNames = [
 
 <Layout title={`Log ${year} | ${SITE_TITLE}`} description={SITE_DESCRIPTION}>
 	<Header id="blog-header" />
+	{isPersonal ? (
 	<BlurTop />
 		<main class="w-full max-w-app mx-auto px-4">
 			<section class="mb-12">
@@ -50,5 +51,6 @@ const monthNames = [
 				</div>
 			</section>
 		</main>
+		) : null}
 		<Footer />
 </Layout>

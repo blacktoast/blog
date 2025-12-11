@@ -9,6 +9,7 @@ interface Props {
 }
 
 const { id } = Astro.props;
+const isPersonal = import.meta.env.PUBLIC_TYPE === 'personal';
 ---
 
 <header id={id} class="m-0 px-4 bg-background/80 dark:bg-background/30 border-b border-border text-foreground mb-4">
@@ -18,16 +19,15 @@ const { id } = Astro.props;
 			<img src={LogoImgDm.src} alt="Blog" class="w-12 h-8 sm:w-20 sm:h-14 border-none m-0 p-0 hidden dark:block" />
 		</a>
 
-
-
 		<div class="flex items-center gap-1.5">
 			<div class="flex items-center flex-wrap gap-2 max-[720px]:hidden">
-				<HeaderLink href="/" class="py-4 px-2 text-inherit border-b-4 border-transparent no-underline transition-colors duration-200 hover:text-accent focus-visible:text-accent  [&.active]:text-accent [&.active]:border-b-accent">Home</HeaderLink>
 				<HeaderLink href="/blog" class="py-4 px-2 text-inherit border-b-4 border-transparent no-underline transition-colors duration-200 hover:text-accent focus-visible:text-accent [&.active]:text-accent [&.active]:border-b-accent">Blog</HeaderLink>
 				<HeaderLink href="/pebbles" class="py-4 px-2 text-inherit border-b-4 border-transparent no-underline transition-colors duration-200 hover:text-accent focus-visible:text-accent [&.active]:text-accent [&.active]:border-b-accent">🪨</HeaderLink>
-				<a href="/log" class="p-2 text-inherit no-underline transition-colors duration-200 hover:text-accent focus-visible:text-accent" aria-label="Log">
+			{
+				isPersonal ? <a href="/log" class="p-2 text-inherit no-underline transition-colors duration-200 hover:text-accent focus-visible:text-accent" aria-label="Log">
 					<Icon name="lucide:scroll-text" class="w-6 h-6" />
-				</a>
+				</a> : null
+			}	
 			</div>
 			<button
 				id="theme-btn"
@@ -48,12 +48,13 @@ const { id } = Astro.props;
 					<span class="sr-only">메뉴 열기</span>
 				</summary>
 				<div id="mobile-menu-content" class="absolute right-0 mt-2 w-28 rounded-xl border border-border bg-background/95 dark:bg-background/90 backdrop-blur shadow-lg p-2 flex flex-col gap-1 z-50 opacity-0">
-					<HeaderLink href="/" class="py-2 px-3 rounded-lg text-inherit no-underline transition-colors duration-200 hover:text-accent focus-visible:text-accent">Home</HeaderLink>
 					<HeaderLink href="/blog" class="py-2 px-3 rounded-lg text-inherit no-underline transition-colors duration-200 hover:text-accent focus-visible:text-accent">Blog</HeaderLink>
 					<HeaderLink href="/pebbles" class="py-2 px-3 rounded-lg text-inherit no-underline transition-colors duration-200 hover:text-accent focus-visible:text-accent">🪨</HeaderLink>
-					<a href="/log" class="py-2 px-3 rounded-lg text-inherit no-underline transition-colors duration-200 hover:text-accent focus-visible:text-accent">				
+					{
+						isPersonal ? <a href="/log" class="py-2 px-3 rounded-lg text-inherit no-underline transition-colors duration-200 hover:text-accent focus-visible:text-accent">				
 						<Icon name="lucide:scroll-text" class="w-6 h-6" />
-					</a>
+					</a> : null
+					}
 				</div>
 			</details>
 		</div>

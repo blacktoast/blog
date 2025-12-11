@@ -8,12 +8,16 @@ import { getCollection } from 'astro:content';
 import Layout from '@/layouts/Layout.astro';
 import BlurTop from '@/components/BlurTop.astro';
 
+
+
+
+const isPersonal = import.meta.env.PUBLIC_TYPE === 'personal';
 const logs = (await getCollection('log')).sort(
 	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
 );
 
 // 최근 30개의 로그만 표시
-const recentLogs = logs.slice(0, 30);
+const recentLogs = isPersonal ? logs.slice(0, 30) : [];
 
 const years = [...new Set(logs.map((log) => log.data.pubDate.getFullYear()))].sort((a, b) => b - a);
 
@@ -23,6 +27,7 @@ const formatYearLabel = (date: Date) => `${date.getFullYear()}년`;
 
 <Layout title={`일지 - 최근 30개`} description={SITE_DESCRIPTION}>
 	<Header id="blog-header" />
+	{isPersonal ? (
 	<BlurTop />
 		<main class="w-full max-w-app mx-auto px-4">
 			<section class="mb-12">
@@ -64,5 +69,7 @@ const formatYearLabel = (date: Date) => `${date.getFullYear()}년`;
 				</div>
 			</section>
 		</main>
+		) : null}
 		<Footer />
 </Layout>
+

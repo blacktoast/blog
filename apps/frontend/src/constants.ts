@@ -17,6 +17,8 @@ interface Social {
   icon: (_props: Props) => Element;
 }
 
+export const PERSONAL_TAGS = ["personal"];
+
 export const SOCIALS: Social[] = [
   {
     name: "GitHub",

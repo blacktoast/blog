@@ -1,10 +1,17 @@
 ---
 import { type CollectionEntry, getCollection, render } from 'astro:content';
 import BlogPost from '../../layouts/BlogPost.astro';
+import { PERSONAL_TAGS } from '@/constants';
 
 export async function getStaticPaths() {
 	const posts = await getCollection('pebbles');
-	return posts.map((post) => ({
+	const isPersonal = import.meta.env.PUBLIC_TYPE === 'personal';
+
+	return posts
+	.filter((post) => isPersonal ? true : !post.data.tags.some((tag)=> {
+		return PERSONAL_TAGS.includes(tag)
+	}))
+	.map((post) => ({
 		params: { slug: post.id },
 		props: post,
 	}));

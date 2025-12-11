@@ -9,5 +9,34 @@
   },
   "observability": {
     "enabled": true
+  },
+
+  // 2. [추가 설정] Personal 서브도메인용
+  // ------------------------------------------------
+  "env": {
+    "main": {
+      "name": "blog",
+      "vars": {
+        "PUBLIC_TYPE": "main"
+      },
+      "routes": [
+        {
+          "pattern": "haedal.blog",
+          "custom_domain": true
+        }
+      ]
+    },
+    "personal": {
+      "name": "personal-blog", // 워커 이름이 달라야 별도 배포됨
+      "vars": {
+        "PUBLIC_TYPE": "personal"
+      },
+      "routes": [
+        {
+          "pattern": "personal.haedal.blog",
+          "custom_domain": true
+        }
+      ]
+    }
   }
 }
