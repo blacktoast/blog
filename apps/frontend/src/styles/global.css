@@ -53,8 +53,7 @@ html[data-theme="light"] {
   --muted: #457b9d;
   --border: rgba(29, 53, 87, 0.15);
 
-  --bg-image:
-    radial-gradient(
+  --bg-image: radial-gradient(
       circle at 50% 0%,
       rgba(255, 255, 255, 0.6),
       transparent 60%
@@ -75,8 +74,11 @@ html[data-theme="dark"] {
   --muted: rgba(236, 242, 255, 0.75);
   --border: rgba(255, 255, 255, 0.06);
 
-  --bg-image:
-    radial-gradient(circle at top, rgba(61, 102, 173, 0.25), transparent 60%),
+  --bg-image: radial-gradient(
+      circle at top,
+      rgba(61, 102, 173, 0.25),
+      transparent 60%
+    ),
     radial-gradient(
       circle at 80% 20%,
       rgba(194, 61, 255, 0.15),
@@ -84,6 +86,29 @@ html[data-theme="dark"] {
     ),
     linear-gradient(165deg, #16233a 0%, #0b1421 60%);
 }
+
+html[data-theme="spring"] {
+  /* Spring Theme */
+  --background: #fff5f7;
+  --foreground: #5d4037;
+  --accent: #ff8fa3;
+  --muted: #bc546e;
+  --border: rgba(93, 64, 55, 0.15);
+
+  --bg-image: radial-gradient(
+      circle at 10% 20%,
+      rgba(255, 183, 178, 0.4),
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 90% 80%,
+      rgba(168, 230, 207, 0.4),
+      transparent 50%
+    ),
+    linear-gradient(180deg, #fff5f7 0%, #fff0f5 100%);
+}
+
+@custom-variant spring (&:where([data-theme=spring], [data-theme=spring] *));
 
 @theme inline {
   --color-background: var(--background);

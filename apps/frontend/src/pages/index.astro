@@ -17,11 +17,18 @@ const isPersonal = import.meta.env.PUBLIC_TYPE === 'personal';
 					<span class="title-flag text-xl"/>
 				</span>
 			</div>
-			<section class="intro-section mt-6 mb-16 mx-0 sm:px-0">
-				<div class="intro-content max-w-3xl">
+			<section class="intro-section mt-6 mb-16 mx-0 sm:px-0 relative">
+				<div class="intro-content max-w-3xl relative z-10">
 					<p class="intro-greeting text-xl font-medium mb-4 text-foreground">
 						Hi, I'm Retto!
 					</p>
+					
+					<div class="absolute md:-top-38 sm:-top-30 -top-35 right-4 sm:right-30 hidden spring:block animate-in fade-in slide-in-from-bottom-4 duration-700 z-0 pointer-events-none sm:pointer-events-auto">
+						<div class="relative group rotate-5">
+							<img src="/haedal_spring.png" alt="Spring Haedal" class="relative z-10 w-24 h-auto lg:w-40 md:w-35 sm:w-30 object-contain mix-blend-multiply" />
+						</div>
+					</div>
+
 					<p class="intro-description text-base leading-relaxed mb-6 text-foreground/90">
 						I'm a frontend engineer working in the web3 industry. 
 						<br/>
@@ -95,6 +102,7 @@ const isPersonal = import.meta.env.PUBLIC_TYPE === 'personal';
 						</span>
 					</p>
 					) : null}
+			</div>
 			</div>
 			</section>
 		</main>

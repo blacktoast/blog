@@ -43,7 +43,14 @@ window.onload = () => {
     reflectPreference();
 
     document.querySelector("#theme-btn")?.addEventListener("click", () => {
-      themeValue = themeValue === "light" ? "dark" : "light";
+      // light -> dark -> spring -> light
+      if (themeValue === "light") {
+        themeValue = "dark";
+      } else if (themeValue === "dark") {
+        themeValue = "spring";
+      } else {
+        themeValue = "light";
+      }
       setPreference();
     });
   }
@@ -53,7 +60,7 @@ window.onload = () => {
   document.addEventListener("astro:after-swap", setThemeFeature);
 };
 
-document.addEventListener("astro:before-swap", event => {
+document.addEventListener("astro:before-swap", (event) => {
   const bgColor = document
     .querySelector("meta[name='theme-color']")
     ?.getAttribute("content");
@@ -69,4 +76,3 @@ window
     themeValue = isDark ? "dark" : "light";
     setPreference();
   });
-
