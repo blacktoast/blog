@@ -1,4 +1,4 @@
-const primaryColorScheme = ""; // "light" | "dark"
+const primaryColorScheme = "spring"; // "light" | "dark" | "spring"
 
 const currentTheme = localStorage.getItem("theme");
 
