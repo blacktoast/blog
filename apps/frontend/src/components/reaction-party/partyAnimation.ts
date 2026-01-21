@@ -1,13 +1,19 @@
-export function createPartyAnimation(event: MouseEvent): void {
+export function createPartyAnimation(
+  event: MouseEvent,
+  theme: string = "light"
+): void {
   const clickX = event.clientX;
   const clickY = event.clientY;
 
   const particleCount = 15;
-  const emojis = ['🎉', '🎊', '✨', '🌟', '⭐', '💫', '🎆'];
+  const defaultEmojis = ["🎉", "🎊", "✨", "🌟", "⭐", "💫", "🎆"];
+  const springEmojis = ["🌸", "🌺", "🌼", "🌷", "🏵️", "🍃", "💮"];
+
+  const emojis = theme === "spring" ? springEmojis : defaultEmojis;
   const gravity = 800;
 
   for (let i = 0; i < particleCount; i++) {
-    const particle = document.createElement('div');
+    const particle = document.createElement("div");
     particle.textContent = emojis[Math.floor(Math.random() * emojis.length)];
 
     const spreadAngle = Math.PI * 0.7;
