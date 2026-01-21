@@ -1,5 +1,14 @@
 const primaryColorScheme = "spring"; // "light" | "dark" | "spring"
 
+// Spring 테마 출시: 기존 사용자를 한 번만 spring으로 강제 전환
+const THEME_VERSION = "spring-launch-1";
+const storedVersion = localStorage.getItem("theme-version");
+
+if (storedVersion !== THEME_VERSION) {
+  localStorage.setItem("theme", "spring");
+  localStorage.setItem("theme-version", THEME_VERSION);
+}
+
 const currentTheme = localStorage.getItem("theme");
 
 function getPreferTheme() {
