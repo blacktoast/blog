@@ -191,3 +191,22 @@ html[data-theme="spring"] {
 :target {
   scroll-margin-block: 1rem;
 }
+
+/* ===== Spring Theme Breadcrumb Decoration ===== */
+html[data-theme="spring"] .breadcrumb {
+  position: relative;
+  padding-top: 2.5rem;
+}
+
+html[data-theme="spring"] .breadcrumb::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 120px;
+  height: 40px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 40'%3E%3C!-- Branch --%3E%3Cpath d='M0 25 Q30 20 60 22 T120 18' stroke='%238B6F5C' stroke-width='2' fill='none'/%3E%3Cpath d='M40 22 Q50 15 55 8' stroke='%238B6F5C' stroke-width='1.5' fill='none'/%3E%3Cpath d='M75 20 Q85 12 95 5' stroke='%238B6F5C' stroke-width='1.5' fill='none'/%3E%3C!-- Cherry Blossoms --%3E%3Cg fill='%23FFB7C5'%3E%3Ccircle cx='55' cy='6' r='4'/%3E%3Ccircle cx='52' cy='10' r='3'/%3E%3Ccircle cx='58' cy='11' r='3'/%3E%3Ccircle cx='95' cy='4' r='4'/%3E%3Ccircle cx='91' cy='8' r='3'/%3E%3Ccircle cx='98' cy='9' r='3'/%3E%3Ccircle cx='30' cy='18' r='3.5'/%3E%3Ccircle cx='26' cy='21' r='2.5'/%3E%3Ccircle cx='34' cy='22' r='2.5'/%3E%3C/g%3E%3C!-- Flower Centers --%3E%3Cg fill='%23FFEAA7'%3E%3Ccircle cx='55' cy='6' r='1.5'/%3E%3Ccircle cx='95' cy='4' r='1.5'/%3E%3Ccircle cx='30' cy='18' r='1.2'/%3E%3C/g%3E%3C!-- Falling Petals --%3E%3Cg fill='%23FFB7C5' opacity='0.7'%3E%3Cellipse cx='70' cy='30' rx='3' ry='2' transform='rotate(25 70 30)'/%3E%3Cellipse cx='45' cy='35' rx='2.5' ry='1.5' transform='rotate(-15 45 35)'/%3E%3Cellipse cx='100' cy='28' rx='2' ry='1.5' transform='rotate(40 100 28)'/%3E%3C/g%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-size: contain;
+  pointer-events: none;
+}

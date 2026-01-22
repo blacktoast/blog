@@ -1,0 +1,257 @@
+---
+// Spring theme cherry blossom petals animation
+// Only visible when data-theme="spring"
+---
+
+<canvas id="spring-petals-canvas" class="spring-petals-canvas"></canvas>
+
+<style>
+  .spring-petals-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 60vh;
+    pointer-events: none;
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+  }
+
+  :global(html[data-theme="spring"]) .spring-petals-canvas {
+    opacity: 1;
+  }
+</style>
+
+<script>
+interface Petal {
+  x: number;
+  y: number;
+  size: number;
+  speedY: number;
+  speedX: number;
+  rotation: number;
+  rotationSpeed: number;
+  wobbleAmplitude: number;
+  wobbleSpeed: number;
+  wobbleOffset: number;
+  opacity: number;
+  color: string;
+}
+
+const PETAL_COLORS = [
+  'rgba(255, 183, 197, OPACITY)', // 연한 핑크
+  'rgba(255, 192, 203, OPACITY)', // 핑크
+  'rgba(255, 209, 220, OPACITY)', // 밝은 핑크
+  'rgba(255, 228, 225, OPACITY)', // 미스티 로즈
+  'rgba(252, 200, 220, OPACITY)', // 라이트 핑크
+];
+
+class SpringPetalsAnimation {
+  private canvas: HTMLCanvasElement;
+  private ctx: CanvasRenderingContext2D;
+  private petals: Petal[] = [];
+  private animationId: number | null = null;
+  private isSpringTheme: boolean = false;
+  private observer: MutationObserver | null = null;
+
+  constructor(canvas: HTMLCanvasElement) {
+    this.canvas = canvas;
+    this.ctx = canvas.getContext('2d')!;
+    this.resize();
+    this.init();
+  }
+
+  private resize() {
+    const dpr = window.devicePixelRatio || 1;
+    const rect = this.canvas.getBoundingClientRect();
+    this.canvas.width = rect.width * dpr;
+    this.canvas.height = rect.height * dpr;
+    this.ctx.scale(dpr, dpr);
+  }
+
+  private createPetal(): Petal {
+    const rect = this.canvas.getBoundingClientRect();
+    const colorTemplate = PETAL_COLORS[Math.floor(Math.random() * PETAL_COLORS.length)];
+
+    return {
+      x: Math.random() * rect.width,
+      y: -20 - Math.random() * 50, // 헤더 위에서 시작
+      size: 3 + Math.random() * 7,  // 3~10px (더 작고 섬세한 꽃잎)
+      speedY: 0.3 + Math.random() * 0.7, // 다양한 낙하 속도
+      speedX: (Math.random() - 0.5) * 0.3, // 좌우 드리프트
+      rotation: Math.random() * Math.PI * 2,
+      rotationSpeed: (Math.random() - 0.5) * 0.03,
+      wobbleAmplitude: 20 + Math.random() * 40, // 흔들림 폭
+      wobbleSpeed: 0.01 + Math.random() * 0.02,
+      wobbleOffset: Math.random() * Math.PI * 2,
+      opacity: 0.7 + Math.random() * 0.3,
+      color: colorTemplate,
+    };
+  }
+
+  private init() {
+    // 초기 꽃잎 생성
+    const rect = this.canvas.getBoundingClientRect();
+    const petalCount = Math.floor(rect.width / 40); // 화면 너비에 따라 조절
+
+    for (let i = 0; i < petalCount; i++) {
+      const petal = this.createPetal();
+      // 초기에는 화면 전체에 분산
+      petal.y = Math.random() * rect.height * 0.8;
+      this.petals.push(petal);
+    }
+
+    // 테마 변경 감지
+    this.checkTheme();
+    this.observeThemeChange();
+
+    // 리사이즈 핸들러
+    window.addEventListener('resize', () => this.resize());
+  }
+
+  private checkTheme() {
+    const html = document.documentElement;
+    this.isSpringTheme = html.getAttribute('data-theme') === 'spring';
+
+    if (this.isSpringTheme && !this.animationId) {
+      this.start();
+    } else if (!this.isSpringTheme && this.animationId) {
+      this.stop();
+    }
+  }
+
+  private observeThemeChange() {
+    this.observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === 'data-theme') {
+          this.checkTheme();
+        }
+      });
+    });
+
+    this.observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme'],
+    });
+  }
+
+  private drawPetal(petal: Petal) {
+    const { x, y, size, rotation, opacity, color } = petal;
+    const rect = this.canvas.getBoundingClientRect();
+
+    // 화면 중간 이후부터 페이드아웃
+    const fadeStart = rect.height * 0.4;
+    const fadeEnd = rect.height * 0.9;
+    let finalOpacity = opacity;
+
+    if (y > fadeStart) {
+      const fadeProgress = (y - fadeStart) / (fadeEnd - fadeStart);
+      finalOpacity = opacity * (1 - Math.min(fadeProgress, 1));
+    }
+
+    if (finalOpacity <= 0) return;
+
+    this.ctx.save();
+    this.ctx.translate(x, y);
+    this.ctx.rotate(rotation);
+    this.ctx.globalAlpha = finalOpacity;
+
+    // 꽃잎 그리기 (타원형 + 끝이 뾰족한 형태)
+    const petalColor = color.replace('OPACITY', finalOpacity.toString());
+    this.ctx.fillStyle = petalColor;
+    this.ctx.beginPath();
+
+    // 꽃잎 모양: 부드러운 타원형
+    this.ctx.ellipse(0, 0, size * 0.4, size, 0, 0, Math.PI * 2);
+    this.ctx.fill();
+
+    // 약간의 하이라이트
+    this.ctx.fillStyle = `rgba(255, 255, 255, ${finalOpacity * 0.3})`;
+    this.ctx.beginPath();
+    this.ctx.ellipse(-size * 0.1, -size * 0.3, size * 0.15, size * 0.3, 0.3, 0, Math.PI * 2);
+    this.ctx.fill();
+
+    this.ctx.restore();
+  }
+
+  private update() {
+    const rect = this.canvas.getBoundingClientRect();
+    const time = Date.now() * 0.001;
+
+    this.petals.forEach((petal, index) => {
+      // 흔들림 적용
+      const wobble = Math.sin(time * petal.wobbleSpeed * 60 + petal.wobbleOffset) * petal.wobbleAmplitude * 0.02;
+
+      petal.x += petal.speedX + wobble;
+      petal.y += petal.speedY;
+      petal.rotation += petal.rotationSpeed;
+
+      // 화면 아래로 사라지면 재생성
+      if (petal.y > rect.height || petal.x < -50 || petal.x > rect.width + 50) {
+        const newPetal = this.createPetal();
+        this.petals[index] = newPetal;
+      }
+    });
+  }
+
+  private render() {
+    const rect = this.canvas.getBoundingClientRect();
+    this.ctx.clearRect(0, 0, rect.width, rect.height);
+
+    this.petals.forEach((petal) => this.drawPetal(petal));
+  }
+
+  private animate = () => {
+    this.update();
+    this.render();
+    this.animationId = requestAnimationFrame(this.animate);
+  };
+
+  start() {
+    if (!this.animationId) {
+      this.animate();
+    }
+  }
+
+  stop() {
+    if (this.animationId) {
+      cancelAnimationFrame(this.animationId);
+      this.animationId = null;
+    }
+  }
+
+  destroy() {
+    this.stop();
+    this.observer?.disconnect();
+    window.removeEventListener('resize', () => this.resize());
+  }
+}
+
+let animation: SpringPetalsAnimation | null = null;
+
+const initPetals = () => {
+  const canvas = document.getElementById('spring-petals-canvas') as HTMLCanvasElement;
+  if (canvas && !animation) {
+    animation = new SpringPetalsAnimation(canvas);
+  }
+};
+
+const destroyPetals = () => {
+  if (animation) {
+    animation.destroy();
+    animation = null;
+  }
+};
+
+// Astro 페이지 전환 지원
+document.addEventListener('astro:page-load', initPetals);
+document.addEventListener('astro:before-swap', destroyPetals);
+
+// 일반 페이지 로드
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initPetals);
+} else {
+  initPetals();
+}
+</script>
