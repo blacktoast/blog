@@ -15,9 +15,9 @@ import LightModeController from '@/components/inspiration/LightModeController';
 		<LightRays
 			client:visible
 			raysOrigin="top-center"
-			raysSpeed={0.7}
-			lightSpread={1.5}
-			rayLength={2.5}
+			raysSpeed={0.5}
+			lightSpread={0.2}
+			rayLength={1}
 			pulsating={true}
 			fadeDistance={1.2}
 			saturation={0.8}
@@ -44,5 +44,13 @@ import LightModeController from '@/components/inspiration/LightModeController';
 		z-index: 6; /* CircularReveal(5) 위, 카드(10) 아래 */
 		pointer-events: none;
 		overflow: hidden;
+		/* 기본 숨김 - 조명 모드 진입 애니메이션 완료 후 표시 */
+		opacity: 0;
+		transition: opacity 0.3s ease-out;
+	}
+
+	/* 조명 모드 진입 완료 후 LightRays 표시 */
+	:global(body.light-rays-visible) .light-rays-background {
+		opacity: 1;
 	}
 </style>

@@ -51,6 +51,17 @@
   overflow: hidden;
 }
 
+/* LightRays 배경 기본 숨김 */
+:global(.light-rays-background) {
+  opacity: 0;
+  transition: opacity 0.3s ease-out;
+}
+
+/* 조명 모드 진입 완료 후 LightRays 표시 */
+:global(body.light-rays-visible .light-rays-background) {
+  opacity: 1;
+}
+
 /* 떠있는 전구 버튼 */
 .floating-lightbulb {
   position: fixed;

@@ -123,7 +123,11 @@ export default function LightModeController() {
   // 애니메이션 완료 콜백
   const handleAnimationComplete = useCallback(() => {
     setIsAnimating(false);
-  }, []);
+    // 조명 모드 진입 완료 시에만 LightRays 표시
+    if (isLightMode) {
+      document.body.classList.add('light-rays-visible');
+    }
+  }, [isLightMode]);
 
   // 조명 모드 해제 → 이전 페이지로 이동
   const handleFloatingLightbulbClick = useCallback(() => {
@@ -135,6 +139,8 @@ export default function LightModeController() {
     }
 
     setIsAnimating(true);
+    // 해제 시작할 때 즉시 LightRays 숨김
+    document.body.classList.remove('light-rays-visible');
     setIsLightMode(false);
     navigationTimerRef.current = window.setTimeout(() => {
       navigationTimerRef.current = null;
