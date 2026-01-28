@@ -4,6 +4,7 @@ import Footer from '@/components/Footer.astro';
 import Layout from '@/layouts/Layout.astro';
 import InspirationGrid from '@/components/inspiration/InspirationGrid';
 import LightRays from '@/components/inspiration/LightRays';
+import LightModeController from '@/components/inspiration/LightModeController';
 ---
 
 <Layout title="영감" description="영감을 받은 사이트들">
@@ -14,8 +15,7 @@ import LightRays from '@/components/inspiration/LightRays';
 		<LightRays
 			client:visible
 			raysOrigin="top-center"
-			raysColor="#ffd700"
-			raysSpeed={0.5}
+			raysSpeed={0.7}
 			lightSpread={1.5}
 			rayLength={2.5}
 			pulsating={true}
@@ -23,12 +23,17 @@ import LightRays from '@/components/inspiration/LightRays';
 			saturation={0.8}
 			followMouse={true}
 			mouseInfluence={0.15}
+			useThemeColor={true}
 		/>
 	</div>
 
 	<main class="relative z-10 mt-8">
 		<InspirationGrid client:visible />
 	</main>
+
+	<!-- 조명 모드 컨트롤러 (오버레이 + 떠있는 전구) -->
+	<LightModeController client:load />
+
 	<Footer />
 </Layout>
 
@@ -36,7 +41,7 @@ import LightRays from '@/components/inspiration/LightRays';
 	.light-rays-background {
 		position: fixed;
 		inset: 0;
-		z-index: 0;
+		z-index: 6; /* CircularReveal(5) 위, 카드(10) 아래 */
 		pointer-events: none;
 		overflow: hidden;
 	}

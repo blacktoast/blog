@@ -1,0 +1,90 @@
+/* InspirationPage 조명 모드 스타일 */
+
+.inspiration-page-wrapper {
+  position: relative;
+  min-height: 100vh;
+}
+
+/* 원형 마스크 컨테이너 */
+.circular-reveal-container {
+  position: fixed;
+  inset: 0;
+  z-index: 5;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* 원형 마스크 (box-shadow로 바깥 영역을 검은색으로 채움) */
+.circular-reveal-circle {
+  position: absolute;
+  border-radius: 50%;
+  /* 원 자체는 투명, 바깥을 거대한 그림자로 채움 */
+  background: transparent;
+  box-shadow: 0 0 0 9999px #110f15;
+  will-change: width, height, left, top;
+}
+
+/* 헤더 숨김 애니메이션 */
+:global(header.header-hidden) {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transform: translateY(-100%) !important;
+  transition: opacity 0.5s ease-out, transform 0.5s ease-out !important;
+}
+
+/* 푸터 숨김 애니메이션 */
+:global(footer.footer-hidden) {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transform: translateY(100%) !important;
+  transition: opacity 0.5s ease-out, transform 0.5s ease-out !important;
+}
+
+/* 기본 상태에서의 전환 효과 */
+:global(header),
+:global(footer) {
+  transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+}
+
+/* 조명 모드에서 body 스타일 */
+:global(body.light-mode-active) {
+  overflow: hidden;
+}
+
+/* 떠있는 전구 버튼 */
+.floating-lightbulb {
+  position: fixed;
+  z-index: 30;
+  padding: 0.5rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--color-accent);
+  filter: drop-shadow(0 0 8px var(--color-accent))
+          drop-shadow(0 0 16px var(--color-accent));
+  animation: floating-bulb-glow 2s ease-in-out infinite alternate;
+  transition: opacity 0.3s ease-out, filter 0.2s ease;
+}
+
+.floating-lightbulb:hover {
+  filter: drop-shadow(0 0 12px var(--color-accent))
+          drop-shadow(0 0 24px var(--color-accent))
+          drop-shadow(0 0 36px var(--color-accent));
+}
+
+.floating-lightbulb:active {
+  filter: drop-shadow(0 0 6px var(--color-accent))
+          drop-shadow(0 0 12px var(--color-accent));
+}
+
+@keyframes floating-bulb-glow {
+  0% {
+    filter: drop-shadow(0 0 6px var(--color-accent))
+            drop-shadow(0 0 12px var(--color-accent));
+  }
+  100% {
+    filter: drop-shadow(0 0 10px var(--color-accent))
+            drop-shadow(0 0 20px var(--color-accent))
+            drop-shadow(0 0 30px var(--color-accent));
+  }
+}

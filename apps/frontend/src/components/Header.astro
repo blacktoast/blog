@@ -152,7 +152,7 @@ const init = () => {
 			duration: 0.3,
 			ease: [0.22, 1, 0.36, 1],
 		});
-		
+
 		// 애니메이션 완료 후 open 속성 제거
 		currentAnimation.finished.then(() => {
 			mobileMenu.removeAttribute('open');
@@ -204,6 +204,46 @@ const init = () => {
 	cleanupFunctions.push(() => {
 		document.removeEventListener('click', handleDocumentClick);
 	});
+
+	// 전구 클릭 이벤트 (inspiration 페이지에서만 동작)
+	const setupLightbulbClick = () => {
+		const lightbulbDesktop = document.querySelector('[data-lightbulb]');
+		const lightbulbMobile = document.querySelector('[data-lightbulb-mobile]');
+
+		const handleLightbulbClick = (event: Event) => {
+			// inspiration 페이지인지 확인
+			if (!window.location.pathname.includes('inspiration')) return;
+
+			event.preventDefault();
+			const target = event.currentTarget as HTMLElement;
+			const rect = target.getBoundingClientRect();
+
+			// 전구 아이콘 중심 좌표 계산
+			const x = rect.left + rect.width / 2;
+			const y = rect.top + rect.height / 2;
+
+			// 커스텀 이벤트 발생
+			window.dispatchEvent(new CustomEvent('lightbulb-click', {
+				detail: { x, y }
+			}));
+		};
+
+		if (lightbulbDesktop) {
+			lightbulbDesktop.addEventListener('click', handleLightbulbClick);
+			cleanupFunctions.push(() => {
+				lightbulbDesktop.removeEventListener('click', handleLightbulbClick);
+			});
+		}
+
+		if (lightbulbMobile) {
+			lightbulbMobile.addEventListener('click', handleLightbulbClick);
+			cleanupFunctions.push(() => {
+				lightbulbMobile.removeEventListener('click', handleLightbulbClick);
+			});
+		}
+	};
+
+	setupLightbulbClick();
 };
 
 // 페이지 로드 시 초기화

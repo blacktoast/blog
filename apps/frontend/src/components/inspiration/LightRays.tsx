@@ -4,6 +4,22 @@ import './LightRays.css';
 
 const DEFAULT_COLOR = '#ffffff';
 
+// 테마별 LightRays 색상
+const THEME_COLORS: Record<string, string> = {
+  light: '#4fc3f7',   // 밝은 블루
+  dark: '#ffd54f',    // 밝은 골드
+  spring: '#ffb6c1',  // 밝은 핑크
+};
+
+const getThemeColor = (): string => {
+  if (typeof document === 'undefined') return THEME_COLORS.light;
+  const currentTheme =
+    document.documentElement.getAttribute("data-theme") || "light";
+  if (currentTheme === 'spring') return THEME_COLORS.spring;
+  if (currentTheme === 'dark') return THEME_COLORS.dark;
+  return THEME_COLORS.light;
+};
+
 const hexToRgb = (hex: string): [number, number, number] => {
   const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   return m ? [parseInt(m[1], 16) / 255, parseInt(m[2], 16) / 255, parseInt(m[3], 16) / 255] : [1, 1, 1];
@@ -47,11 +63,12 @@ interface LightRaysProps {
   noiseAmount?: number;
   distortion?: number;
   className?: string;
+  useThemeColor?: boolean;
 }
 
 const LightRays = ({
   raysOrigin = 'top-center',
-  raysColor = DEFAULT_COLOR,
+  raysColor,
   raysSpeed = 1,
   lightSpread = 1,
   rayLength = 2,
@@ -62,7 +79,8 @@ const LightRays = ({
   mouseInfluence = 0.1,
   noiseAmount = 0.0,
   distortion = 0.0,
-  className = ''
+  className = '',
+  useThemeColor = true
 }: LightRaysProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const uniformsRef = useRef<Record<string, { value: unknown }> | null>(null);
@@ -74,6 +92,32 @@ const LightRays = ({
   const cleanupFunctionRef = useRef<(() => void) | null>(null);
   const [isVisible, setIsVisible] = useState(false);
   const observerRef = useRef<IntersectionObserver | null>(null);
+
+  // 테마 기반 색상 또는 직접 지정된 색상 사용
+  const [currentColor, setCurrentColor] = useState(() =>
+    raysColor || (useThemeColor ? getThemeColor() : DEFAULT_COLOR)
+  );
+
+  // 테마 변경 감지 및 색상 업데이트
+  useEffect(() => {
+    if (!useThemeColor || raysColor) return;
+
+    const updateColor = () => {
+      setCurrentColor(getThemeColor());
+    };
+
+    // MutationObserver로 테마 클래스 변경 감지
+    const observer = new MutationObserver(updateColor);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class']
+    });
+
+    // 초기 색상 설정
+    updateColor();
+
+    return () => observer.disconnect();
+  }, [useThemeColor, raysColor]);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -235,7 +279,7 @@ void main() {
         rayPos: { value: [0, 0] },
         rayDir: { value: [0, 1] },
 
-        raysColor: { value: hexToRgb(raysColor) },
+        raysColor: { value: hexToRgb(currentColor) },
         raysSpeed: { value: raysSpeed },
         lightSpread: { value: lightSpread },
         rayLength: { value: rayLength },
@@ -347,7 +391,7 @@ void main() {
   }, [
     isVisible,
     raysOrigin,
-    raysColor,
+    currentColor,
     raysSpeed,
     lightSpread,
     rayLength,
@@ -366,7 +410,7 @@ void main() {
     const u = uniformsRef.current;
     const renderer = rendererRef.current;
 
-    u.raysColor.value = hexToRgb(raysColor);
+    u.raysColor.value = hexToRgb(currentColor);
     u.raysSpeed.value = raysSpeed;
     u.lightSpread.value = lightSpread;
     u.rayLength.value = rayLength;
@@ -383,7 +427,7 @@ void main() {
     u.rayPos.value = anchor;
     u.rayDir.value = dir;
   }, [
-    raysColor,
+    currentColor,
     raysSpeed,
     lightSpread,
     raysOrigin,
