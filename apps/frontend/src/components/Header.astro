@@ -7,10 +7,12 @@ import { Icon } from 'astro-icon/components';
 
 interface Props {
 	id?: string;
+	isInspirationPage?: boolean;
 }
 
-const { id } = Astro.props;
+const { id, isInspirationPage = false } = Astro.props;
 const isPersonal = import.meta.env.PUBLIC_TYPE === 'personal';
+const lightbulbClass = isInspirationPage ? 'lightbulb-lit' : '';
 ---
 
 <header id={id} class="m-0 px-4 bg-background/80 dark:bg-background/30 border-b border-border text-foreground mb-4">
@@ -29,7 +31,10 @@ const isPersonal = import.meta.env.PUBLIC_TYPE === 'personal';
 				isPersonal ? <a href="/log" class="p-2 text-inherit no-underline transition-colors duration-200 hover:text-accent focus-visible:text-accent" aria-label="Log">
 					<Icon name="lucide:scroll-text" class="w-6 h-6" />
 				</a> : null
-			}	
+			}
+				<a href="/inspiration" class:list={["p-2 text-inherit no-underline transition-colors duration-200 hover:text-accent focus-visible:text-accent", lightbulbClass]} aria-label="영감" data-lightbulb>
+					<Icon name="lucide:lightbulb" class="w-6 h-6" />
+				</a>
 			</div>
 			<button
 				id="theme-btn"
@@ -54,10 +59,13 @@ const isPersonal = import.meta.env.PUBLIC_TYPE === 'personal';
 					<HeaderLink href="/blog" class="py-2 px-3 rounded-lg text-inherit no-underline transition-colors duration-200 hover:text-accent focus-visible:text-accent">Blog</HeaderLink>
 					<HeaderLink href="/pebbles" class="py-2 px-3 rounded-lg text-inherit no-underline transition-colors duration-200 hover:text-accent focus-visible:text-accent">🪨</HeaderLink>
 					{
-						isPersonal ? <a href="/log" class="py-2 px-3 rounded-lg text-inherit no-underline transition-colors duration-200 hover:text-accent focus-visible:text-accent">				
+						isPersonal ? <a href="/log" class="py-2 px-3 rounded-lg text-inherit no-underline transition-colors duration-200 hover:text-accent focus-visible:text-accent">
 						<Icon name="lucide:scroll-text" class="w-6 h-6" />
 					</a> : null
 					}
+					<a href="/inspiration" class:list={["py-2 px-3 rounded-lg text-inherit no-underline transition-colors duration-200 hover:text-accent focus-visible:text-accent", lightbulbClass]} aria-label="영감" data-lightbulb-mobile>
+						<Icon name="lucide:lightbulb" class="w-6 h-6" />
+					</a>
 				</div>
 			</details>
 		</div>
@@ -67,6 +75,26 @@ const isPersonal = import.meta.env.PUBLIC_TYPE === 'personal';
 <style>
 	#mobile-menu[open] > summary {
 		opacity: 0.5;
+	}
+
+	/* 전구 "불 켜진" 효과 - inspiration 페이지에서만 적용 */
+	.lightbulb-lit {
+		color: var(--color-accent);
+		filter: drop-shadow(0 0 8px var(--color-accent))
+		        drop-shadow(0 0 16px var(--color-accent));
+		animation: bulb-glow 2s ease-in-out infinite alternate;
+	}
+
+	@keyframes bulb-glow {
+		0% {
+			filter: drop-shadow(0 0 6px var(--color-accent))
+			        drop-shadow(0 0 12px var(--color-accent));
+		}
+		100% {
+			filter: drop-shadow(0 0 10px var(--color-accent))
+			        drop-shadow(0 0 20px var(--color-accent))
+			        drop-shadow(0 0 30px var(--color-accent));
+		}
 	}
 </style>
 

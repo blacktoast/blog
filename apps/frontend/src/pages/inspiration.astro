@@ -1,0 +1,43 @@
+---
+import Header from '@/components/Header.astro';
+import Footer from '@/components/Footer.astro';
+import Layout from '@/layouts/Layout.astro';
+import InspirationGrid from '@/components/inspiration/InspirationGrid';
+import LightRays from '@/components/inspiration/LightRays';
+---
+
+<Layout title="영감" description="영감을 받은 사이트들">
+	<Header isInspirationPage={true} />
+
+	<!-- LightRays 배경: 전체 화면 고정 -->
+	<div class="light-rays-background">
+		<LightRays
+			client:visible
+			raysOrigin="top-center"
+			raysColor="#ffd700"
+			raysSpeed={0.5}
+			lightSpread={1.5}
+			rayLength={2.5}
+			pulsating={true}
+			fadeDistance={1.2}
+			saturation={0.8}
+			followMouse={true}
+			mouseInfluence={0.15}
+		/>
+	</div>
+
+	<main class="relative z-10 mt-8">
+		<InspirationGrid client:visible />
+	</main>
+	<Footer />
+</Layout>
+
+<style>
+	.light-rays-background {
+		position: fixed;
+		inset: 0;
+		z-index: 0;
+		pointer-events: none;
+		overflow: hidden;
+	}
+</style>
