@@ -82,20 +82,18 @@ export default function InspirationGrid() {
         }
 
         .card-content {
-          display: flex;
-          flex-direction: column;
+          position: relative;
           height: 100%;
         }
 
         .card-image {
-          flex: 1;
           overflow: hidden;
-          border-radius: 1.5rem 1.5rem 0 0;
+          border-radius: 1rem;
         }
 
         .card-image img {
           width: 100%;
-          height: 200px;
+          height: 220px;
           object-fit: cover;
           display: block;
           transition: transform 0.3s ease;
@@ -105,17 +103,77 @@ export default function InspirationGrid() {
           transform: scale(1.05);
         }
 
+        /* Glass Footer - pill shape overlay on image */
         .card-footer {
-          padding: 0.75rem 1rem;
+          position: absolute;
           display: flex;
-          justify-content: flex-end;
           align-items: center;
+          
+          bottom: 0.75rem;
+          right: 0.75rem;
+          padding: 0.25rem 0.5rem;
+
+          /* Glass Effect */
+          background: rgba(255, 255, 255, 0.2);
+          backdrop-filter: blur(12px) saturate(1.5);
+          -webkit-backdrop-filter: blur(12px) saturate(1.5);
+
+          /* Glass Border */
+          border: 1px solid rgba(255, 255, 255, 0.3);
+          box-shadow:
+            inset 0 1px 0 0 rgba(255, 255, 255, 0.2),
+            0 2px 8px rgba(0, 0, 0, 0.1);
+
+          /* Pill shape */
+          border-radius: 9999px;
+
+          /* Below spotlight overlay (z-index: 10) */
+          z-index: 5;
+
+          /* Limit width for long domains */
+          max-width: calc(100% - 1.5rem);
+
+          /* Smooth theme transition */
+          transition: background 0.3s ease, border-color 0.3s ease;
+        }
+
+        /* Dark theme glass */
+        :global([data-theme="dark"]) .card-footer {
+          background: rgba(0, 0, 0, 0.4);
+          border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        /* Spring theme glass */
+        :global([data-theme="spring"]) .card-footer {
+          background: rgba(255, 182, 193, 0.25);
+          border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Fallback for browsers without backdrop-filter */
+        @supports not (backdrop-filter: blur(12px)) {
+          .card-footer {
+            background: rgba(255, 255, 255, 0.85);
+          }
+
+          :global([data-theme="dark"]) .card-footer {
+            background: rgba(0, 0, 0, 0.75);
+          }
+
+          :global([data-theme="spring"]) .card-footer {
+            background: rgba(255, 182, 193, 0.85);
+          }
         }
 
         .card-origin {
-          font-size: 0.875rem;
+          font-size: 0.6rem;
+          line-height: 1;
           color: var(--color-muted);
           font-family: monospace;
+          /* Handle long domain names */
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          max-width: 100%;
         }
       `}</style>
     </>
