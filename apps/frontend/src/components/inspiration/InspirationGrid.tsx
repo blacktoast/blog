@@ -12,7 +12,13 @@ const inspirations: InspirationItem[] = [
   {
     url: "https://origamiarchive.com/",
     gifPath: "/inspiration/origamiarchive.gif",
-    name: "Stripe"
+  },
+  {
+    url: "https://cannoneyed.com/isometric-nyc/",
+    gifPath: "/inspiration/isometric-nyc.png",
+  }, {
+    url: "https://floor796.com/",
+    gifPath: "/inspiration/floor796.gif",
   },
 ];
 
@@ -26,21 +32,6 @@ const getOrigin = (url: string): string => {
 };
 
 export default function InspirationGrid() {
-  if (inspirations.length === 0) {
-    return (
-      <div class="empty-state">
-        <p>아직 등록된 영감이 없습니다.</p>
-        <style>{`
-          .empty-state {
-            text-align: center;
-            padding: 4rem 2rem;
-            color: var(--color-muted);
-          }
-        `}</style>
-      </div>
-    );
-  }
-
   return (
     <>
       <div class="inspiration-grid">
