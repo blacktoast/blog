@@ -27,7 +27,10 @@ import LightModeController from '@/components/inspiration/LightModeController';
 		/>
 	</div>
 
-	<h2>영감</h2>
+	<header class="page-header">
+		<h2 class="page-title">靈感</h2>
+	</header>
+
 	<main class="relative z-10 mt-8">
 		<InspirationGrid client:visible />
 	</main>
@@ -39,6 +42,15 @@ import LightModeController from '@/components/inspiration/LightModeController';
 </Layout>
 
 <style>
+	/* Chinese font for title */
+	@font-face {
+		font-family: 'ChineseTitle';
+		src: url('/fonts/cn-2.woff2') format('woff2');
+		font-weight: 700;
+		font-style: normal;
+		font-display: swap;
+	}
+
 	.light-rays-background {
 		position: fixed;
 		inset: 0;
@@ -54,4 +66,49 @@ import LightModeController from '@/components/inspiration/LightModeController';
 	:global(body.light-rays-visible) .light-rays-background {
 		opacity: 1;
 	}
+
+	/* Page Header - Glass style */
+	.page-header {
+		position: relative;
+		z-index: 10;
+		text-align: center;
+		padding-top: 1rem;
+	}
+
+	.page-title {
+		font-family: 'ChineseTitle', serif;
+		font-size: 2rem;
+		font-weight: 700;
+		margin-bottom: 0.5rem;
+		/* Default (dark theme): 골드 불빛(#ffd54f)의 보색 → 일렉트릭 블루/바이올렛 */
+		color: rgba(124, 77, 255, 0.85);
+	}
+
+	.page-description {
+		font-size: 1rem;
+		color: rgba(255, 255, 255, 0.5);
+		font-weight: 300;
+		letter-spacing: 0.02em;
+	}
+	:global([data-theme="light"]) .page-title {
+		color: rgba(252, 155, 38, 0.6);
+		/* text-shadow:
+			0 0 20px rgba(252, 184, 38, 0.3),
+			0 0 40px rgba(252, 81, 38, 0.15); */
+	}
+
+	:global([data-theme="light"]) .page-description {
+		color: rgba(255, 107, 107, 0.6);
+	}
+
+	/* Spring theme: 핑크 불빛(#ffb6c1)의 보색 → 민트/아쿠아 */
+	:global([data-theme="spring"]) .page-title {
+		color: rgba(129, 170, 137, 0.6);
+	}
+
+	:global([data-theme="spring"]) .page-description {
+		color: rgba(100, 255, 218, 0.6);
+	}
+
+
 </style>

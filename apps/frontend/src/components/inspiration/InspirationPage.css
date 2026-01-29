@@ -20,7 +20,7 @@
   border-radius: 50%;
   /* 원 자체는 투명, 바깥을 거대한 그림자로 채움 */
   background: transparent;
-  box-shadow: 0 0 0 9999px #110f15;
+  box-shadow: 0 0 0 9999px #0D0D12;
   will-change: width, height, left, top;
 }
 
