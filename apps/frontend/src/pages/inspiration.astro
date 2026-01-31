@@ -77,11 +77,37 @@ import LightModeController from '@/components/inspiration/LightModeController';
 
 	.page-title {
 		font-family: 'ChineseTitle', serif;
-		font-size: 2rem;
-		font-weight: 700;
+		font-size: 2.5rem;
+		font-weight: 400;
 		margin-bottom: 0.5rem;
-		/* Default (dark theme): 골드 불빛(#ffd54f)의 보색 → 일렉트릭 블루/바이올렛 */
-		color: rgba(124, 77, 255, 0.85);
+		letter-spacing: 0.1em;
+
+		/* accent 색상 기반 네온 효과 (oklch로 채도 유지) */
+		--neon-core: color-mix(in oklch, var(--color-accent), white 25%);
+		--neon-glow: var(--color-accent);
+		--neon-outer: color-mix(in oklch, var(--color-accent), black 20%);
+
+		color: var(--neon-core);
+		text-shadow:
+			0 0 5px var(--neon-core),
+			0 0 10px var(--neon-core),
+			0 0 20px var(--neon-glow),
+			0 0 40px var(--neon-glow),
+			0 0 80px var(--neon-outer),
+			0 0 120px var(--neon-outer);
+		filter: saturate(1.4);
+		animation: neon-pulse 2s ease-in-out infinite alternate;
+	}
+
+	@keyframes neon-pulse {
+		from {
+			filter: saturate(1.4) brightness(1);
+			opacity: 1;
+		}
+		to {
+			filter: saturate(1.3) brightness(0.85);
+			opacity: 0.9;
+		}
 	}
 
 	.page-description {
@@ -90,20 +116,9 @@ import LightModeController from '@/components/inspiration/LightModeController';
 		font-weight: 300;
 		letter-spacing: 0.02em;
 	}
-	:global([data-theme="light"]) .page-title {
-		color: rgba(252, 155, 38, 0.6);
-		/* text-shadow:
-			0 0 20px rgba(252, 184, 38, 0.3),
-			0 0 40px rgba(252, 81, 38, 0.15); */
-	}
 
 	:global([data-theme="light"]) .page-description {
 		color: rgba(255, 107, 107, 0.6);
-	}
-
-	/* Spring theme: 핑크 불빛(#ffb6c1)의 보색 → 민트/아쿠아 */
-	:global([data-theme="spring"]) .page-title {
-		color: rgba(129, 170, 137, 0.6);
 	}
 
 	:global([data-theme="spring"]) .page-description {

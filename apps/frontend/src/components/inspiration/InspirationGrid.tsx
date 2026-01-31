@@ -11,14 +11,14 @@ const inspirations: InspirationItem[] = [
   // 예시 데이터 - 실제 데이터로 교체하세요
   {
     url: "https://origamiarchive.com/",
-    gifPath: "/inspiration/origamiarchive.gif",
+    gifPath: "/inspiration/origamiarchive.avif",
   },
   {
     url: "https://cannoneyed.com/isometric-nyc/",
     gifPath: "/inspiration/isometric-nyc.png",
   }, {
     url: "https://floor796.com/",
-    gifPath: "/inspiration/floor796.gif",
+    gifPath: "/inspiration/floor796.avif",
   },
 ];
 
