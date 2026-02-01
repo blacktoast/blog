@@ -1,0 +1,81 @@
+/* 기본 컨테이너 스타일 */
+.container {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding-inline: 0.4rem;
+  letter-spacing: -0.02em;
+  margin-left: 0.5rem;
+  font-size: 1.125rem;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 언어별 폰트 */
+.container[data-lang="en"] {
+  font-family: 'en-blog', sans-serif;
+  font-weight: 700;
+}
+
+.container[data-lang="no"] {
+  font-family: 'FRLogo', sans-serif;
+}
+
+.container[data-lang="ja"] {
+  font-family: 'JPLogo', sans-serif;
+  font-weight: 900;
+}
+
+.container[data-lang="zh"] {
+  font-family: 'ZHLogo', sans-serif;
+  font-weight: normal;
+}
+
+.container[data-lang="fr"] {
+  font-family: 'FRLogo', sans-serif;
+}
+
+/* 텍스트 그라디언트 (라이트 모드) */
+.titleText {
+  font-size: 1.25rem;
+  background-image:
+    radial-gradient(circle at 6% 25%, rgba(15, 23, 42, 0.85), transparent 45%),
+    radial-gradient(circle at 90% 5%, rgba(30, 64, 175, 0.65), transparent 40%),
+    conic-gradient(from 140deg at 50% 50%, #0f172a, #1e1b4b, #312e81, #4c1d95, #5b21b6, #7c3aed, #c026d3, #f97316, #fde047, #0f172a);
+  background-size: 180% 180%;
+  background-position: 50% 100%;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+.titleFlag {
+  font-size: 1.25rem;
+}
+
+/* 커서 깜빡임 */
+@keyframes cursorBlink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+.cursor {
+  display: inline-block;
+  margin-left: 2px;
+  animation: cursorBlink 0.8s ease-in-out infinite;
+}
+
+/* 다크 모드 스타일 - :global()로 html 선택자 접근 */
+:global(html[data-theme="dark"]) .container {
+  filter: drop-shadow(0 18px 28px rgba(16, 185, 129, 0.45));
+}
+
+:global(html[data-theme="dark"]) .titleText {
+  background-image:
+    radial-gradient(circle at 5% 18%, rgba(255, 255, 255, 0.7), transparent 48%),
+    radial-gradient(circle at 85% 5%, rgba(248, 250, 252, 0.55), transparent 42%),
+    conic-gradient(from 210deg at 50% 50%, #ffffff, #f8fafc, #e0f2fe, #d1fae5, #fef3c7, #bacadc);
+  background-size: 180% 180%;
+  background-position: 100% 59%;
+}
