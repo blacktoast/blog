@@ -26,7 +26,14 @@ const lightbulbClass = isInspirationPage ? 'lightbulb-lit' : '';
 		<div class="flex items-center gap-1.5">
 			<div class="flex items-center flex-wrap gap-2 max-[720px]:hidden">
 				<HeaderLink href="/blog" class="py-4 px-2 text-inherit border-b-4 border-transparent no-underline transition-colors duration-200 hover:text-accent focus-visible:text-accent [&.active]:text-accent [&.active]:border-b-accent">Blog</HeaderLink>
-				<HeaderLink href="/pebbles" class="py-4 px-2 text-inherit border-b-4 border-transparent no-underline transition-colors duration-200 hover:text-accent focus-visible:text-accent [&.active]:text-accent [&.active]:border-b-accent">🪨</HeaderLink>
+				<HeaderLink href="/pebbles" class="py-4 px-2 text-inherit border-b-4 border-transparent no-underline transition-colors duration-200 hover:text-accent focus-visible:text-accent [&.active]:text-accent [&.active]:border-b-accent">
+					<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+						<g stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+							<path d="M14 21L16 14L20 15L22 19L20.5 21H14Z"/>
+							<path d="M16 14L14 6L6 9L3 21H14"/>
+						</g>
+					</svg>
+				</HeaderLink>
 			{
 				isPersonal ? <a href="/log" class="p-2 text-inherit no-underline transition-colors duration-200 hover:text-accent focus-visible:text-accent" aria-label="Log">
 					<Icon name="lucide:scroll-text" class="w-6 h-6" />
@@ -255,5 +262,6 @@ document.addEventListener('astro:before-swap', () => {
 	cleanupFunctions = [];
 });
 </script>
+
 
 
