@@ -88,17 +88,79 @@ import LightModeController from '@/components/inspiration/LightModeController';
 		--neon-outer: color-mix(in oklch, var(--color-accent), black 20%);
 
 		color: var(--neon-core);
-		text-shadow:
-			0 0 5px var(--neon-core),
-			0 0 10px var(--neon-core),
-			0 0 20px var(--neon-glow),
-			0 0 40px var(--neon-glow),
-			0 0 80px var(--neon-outer),
-			0 0 120px var(--neon-outer);
+
+		/* 초기 상태: 완전히 숨김 (LightRays 점등 전) */
+		opacity: 0;
+		text-shadow: none;
 		filter: saturate(1.4);
-		animation: neon-pulse 2s ease-in-out infinite alternate;
 	}
 
+	/* LightRays가 켜진 후: flickering → pulse 시퀀스 */
+	:global(body.light-rays-visible) .page-title {
+		animation:
+			neon-flicker-on 0.6s ease-out 0.45s forwards,
+			neon-pulse 2s ease-in-out 0.65s infinite alternate;
+	}
+
+	/* 네온사인 점등 애니메이션 - 실제 네온처럼 1-2번 깜빡이며 안정화 */
+	@keyframes neon-flicker-on {
+		/* 꺼진 상태 */
+		0% {
+			opacity: 0;
+			text-shadow: none;
+		}
+		/* 첫 번째 점등 시도 - 밝게 */
+		15% {
+			opacity: 1;
+			text-shadow:
+				0 0 5px var(--neon-core),
+				0 0 10px var(--neon-core),
+				0 0 20px var(--neon-glow),
+				0 0 40px var(--neon-glow),
+				0 0 80px var(--neon-outer),
+				0 0 120px var(--neon-outer);
+		}
+		/* 첫 번째 꺼짐 - 희미하게 */
+		25% {
+			opacity: 0.3;
+			text-shadow:
+				0 0 2px var(--neon-core),
+				0 0 4px var(--neon-core);
+		}
+		/* 두 번째 점등 */
+		40% {
+			opacity: 1;
+			text-shadow:
+				0 0 5px var(--neon-core),
+				0 0 10px var(--neon-core),
+				0 0 20px var(--neon-glow),
+				0 0 40px var(--neon-glow),
+				0 0 80px var(--neon-outer),
+				0 0 120px var(--neon-outer);
+		}
+		/* 두 번째 약간 꺼짐 */
+		50% {
+			opacity: 0.6;
+			text-shadow:
+				0 0 3px var(--neon-core),
+				0 0 6px var(--neon-core),
+				0 0 12px var(--neon-glow),
+				0 0 24px var(--neon-glow);
+		}
+		/* 안정화 - 완전 점등 */
+		70%, 100% {
+			opacity: 1;
+			text-shadow:
+				0 0 5px var(--neon-core),
+				0 0 10px var(--neon-core),
+				0 0 20px var(--neon-glow),
+				0 0 40px var(--neon-glow),
+				0 0 80px var(--neon-outer),
+				0 0 120px var(--neon-outer);
+		}
+	}
+
+	/* 안정화 후 부드러운 pulse */
 	@keyframes neon-pulse {
 		from {
 			filter: saturate(1.4) brightness(1);
