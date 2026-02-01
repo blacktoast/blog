@@ -12,6 +12,7 @@ interface SpotlightCardProps {
   className?: string;
   href?: string;
   maxTilt?: number;
+  style?: Record<string, string | number>;
 }
 
 interface CachedRect {
@@ -37,6 +38,7 @@ export default function SpotlightCard({
   className = "",
   href,
   maxTilt = 8,
+  style,
 }: SpotlightCardProps) {
   const divRef = useRef<HTMLDivElement>(null);
   const themeRef = useRef<string>("light");
@@ -162,6 +164,7 @@ export default function SpotlightCard({
     <>
       <div
         ref={divRef}
+        style={style}
         onMouseEnter={handleMouseEnter}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
@@ -210,6 +213,26 @@ export default function SpotlightCard({
 
           /* Transitions - transform만 빠르게, 나머지는 호버 시에만 */
           transition: transform 0.1s ease-out;
+
+          /* 초기 상태: 숨김 (stagger 애니메이션 대기) */
+          opacity: 0;
+        }
+
+        /* LightRays 점등 후 순차 등장 - 제목(0.45s)과 동시 시작 */
+        body.light-rays-visible .card-spotlight {
+          animation: card-reveal 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+          animation-delay: calc(0.45s + var(--index, 0) * 0.1s);
+        }
+
+        @keyframes card-reveal {
+          from {
+            opacity: 0;
+            transform: perspective(1000px) translateY(20px) scale(0.95) rotateX(0deg) rotateY(0deg);
+          }
+          to {
+            opacity: 1;
+            transform: perspective(1000px) translateY(0) scale(1) rotateX(var(--rotate-x)) rotateY(var(--rotate-y));
+          }
         }
 
         .card-spotlight:hover {
@@ -247,20 +270,20 @@ export default function SpotlightCard({
         }
 
         /* Dark theme glass */
-        :global([data-theme="dark"]) .card-spotlight {
+        [data-theme="dark"] .card-spotlight {
           background: rgba(255, 255, 255, 0.05);
         }
 
-        :global([data-theme="dark"]) .card-spotlight:hover {
+        [data-theme="dark"] .card-spotlight:hover {
           background: rgba(255, 255, 255, 0.08);
         }
 
         /* Spring theme glass */
-        :global([data-theme="spring"]) .card-spotlight {
+        [data-theme="spring"] .card-spotlight {
           background: rgba(255, 182, 193, 0.1);
         }
 
-        :global([data-theme="spring"]) .card-spotlight:hover {
+        [data-theme="spring"] .card-spotlight:hover {
           background: rgba(255, 182, 193, 0.15);
         }
 
@@ -270,11 +293,11 @@ export default function SpotlightCard({
             background: rgba(255, 255, 255, 0.9);
           }
 
-          :global([data-theme="dark"]) .card-spotlight {
+          [data-theme="dark"] .card-spotlight {
             background: rgba(17, 17, 17, 0.9);
           }
 
-          :global([data-theme="spring"]) .card-spotlight {
+          [data-theme="spring"] .card-spotlight {
             background: rgba(255, 240, 245, 0.9);
           }
         }

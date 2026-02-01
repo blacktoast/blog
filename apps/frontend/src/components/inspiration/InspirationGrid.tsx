@@ -36,7 +36,7 @@ export default function InspirationGrid() {
     <>
       <div class="inspiration-grid">
         {inspirations.map((item, index) => (
-          <SpotlightCard key={index} href={item.url}>
+          <SpotlightCard key={index} href={item.url} style={{ '--index': index }}>
             <div class="card-content">
               <div class="card-image">
                 <img
