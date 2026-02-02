@@ -1,5 +1,6 @@
 ---
 import HeaderLink from './HeaderLink.astro';
+import GlassNavIcon from './GlassNavIcon.tsx';
 import LogoImgDm from '@/assets/text-logo-dm.webp';
 import LogoImgLm from '@/assets/text-logo-lm.webp';
 import LogoSpring from "@/assets/text-logo-spring.png";
@@ -13,6 +14,13 @@ interface Props {
 const { id, isInspirationPage = false } = Astro.props;
 const isPersonal = import.meta.env.PUBLIC_TYPE === 'personal';
 const lightbulbClass = isInspirationPage ? 'lightbulb-lit' : '';
+
+// 현재 URL 경로로 활성 상태 판단
+const pathname = Astro.url.pathname;
+const isBlogActive = pathname.startsWith('/blog');
+const isPebblesActive = pathname.startsWith('/pebbles');
+const isLogActive = pathname.startsWith('/log');
+const isInspirationActive = pathname.startsWith('/inspiration');
 ---
 
 <header id={id} class="m-0 px-4 bg-background/80 dark:bg-background/30 border-b border-border text-foreground mb-4">
@@ -25,23 +33,25 @@ const lightbulbClass = isInspirationPage ? 'lightbulb-lit' : '';
 
 		<div class="flex items-center gap-1.5">
 			<div class="flex items-center flex-wrap gap-2 max-[720px]:hidden">
-				<HeaderLink href="/blog" class="py-4 px-2 text-inherit border-b-4 border-transparent no-underline transition-colors duration-200 hover:text-accent focus-visible:text-accent [&.active]:text-accent [&.active]:border-b-accent">Blog</HeaderLink>
-				<HeaderLink href="/pebbles" class="py-4 px-2 text-inherit border-b-4 border-transparent no-underline transition-colors duration-200 hover:text-accent focus-visible:text-accent [&.active]:text-accent [&.active]:border-b-accent">
-					<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+				<GlassNavIcon href="/blog" label="Blog" isActive={isBlogActive}>
+					<Icon name="lucide:book-text" class="w-5 h-5" />
+				</GlassNavIcon>
+				<GlassNavIcon href="/pebbles" label="Pebbles" isActive={isPebblesActive}>
+					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
 						<g stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 							<path d="M14 21L16 14L20 15L22 19L20.5 21H14Z"/>
 							<path d="M16 14L14 6L6 9L3 21H14"/>
 						</g>
 					</svg>
-				</HeaderLink>
+				</GlassNavIcon>
 			{
-				isPersonal ? <a href="/log" class="p-2 text-inherit no-underline transition-colors duration-200 hover:text-accent focus-visible:text-accent" aria-label="Log">
-					<Icon name="lucide:scroll-text" class="w-6 h-6" />
-				</a> : null
+				isPersonal ? <GlassNavIcon href="/log" label="Log" isActive={isLogActive}>
+					<Icon name="lucide:scroll-text" class="w-5 h-5" />
+				</GlassNavIcon> : null
 			}
-				<a href="/inspiration" class:list={["p-2 text-inherit no-underline transition-colors duration-200 hover:text-accent focus-visible:text-accent", lightbulbClass]} aria-label="영감" data-lightbulb>
-					<Icon name="lucide:lightbulb" class="w-6 h-6" />
-				</a>
+				<GlassNavIcon href="/inspiration" label="영감" isActive={isInspirationActive} className={lightbulbClass} data-lightbulb>
+					<Icon name="lucide:lightbulb" class="w-5 h-5" />
+				</GlassNavIcon>
 			</div>
 			<button
 				id="theme-btn"
@@ -62,17 +72,26 @@ const lightbulbClass = isInspirationPage ? 'lightbulb-lit' : '';
 					<Icon name="lucide:menu" class="w-6 h-6 transition-opacity duration-200" />
 					<span class="sr-only">메뉴 열기</span>
 				</summary>
-				<div id="mobile-menu-content" class="absolute right-0 mt-2 w-28 rounded-xl border border-border bg-background/95 dark:bg-background/90 backdrop-blur shadow-lg p-2 flex flex-col gap-1 z-50 opacity-0">
-					<HeaderLink href="/blog" class="py-2 px-3 rounded-lg text-inherit no-underline transition-colors duration-200 hover:text-accent focus-visible:text-accent">Blog</HeaderLink>
-					<HeaderLink href="/pebbles" class="py-2 px-3 rounded-lg text-inherit no-underline transition-colors duration-200 hover:text-accent focus-visible:text-accent">🪨</HeaderLink>
+				<div id="mobile-menu-content" class="absolute right-0 mt-2 w-32 rounded-xl border border-border bg-background/95 dark:bg-background/90 backdrop-blur shadow-lg p-2 flex flex-col gap-1 z-50 opacity-0">
+					<GlassNavIcon href="/blog" label="Blog" isActive={isBlogActive} variant="mobile" showLabel>
+						<Icon name="lucide:book-text" class="w-5 h-5" />
+					</GlassNavIcon>
+					<GlassNavIcon href="/pebbles" label="Pebbles" isActive={isPebblesActive} variant="mobile" showLabel>
+						<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+							<g stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+								<path d="M14 21L16 14L20 15L22 19L20.5 21H14Z"/>
+								<path d="M16 14L14 6L6 9L3 21H14"/>
+							</g>
+						</svg>
+					</GlassNavIcon>
 					{
-						isPersonal ? <a href="/log" class="py-2 px-3 rounded-lg text-inherit no-underline transition-colors duration-200 hover:text-accent focus-visible:text-accent">
-						<Icon name="lucide:scroll-text" class="w-6 h-6" />
-					</a> : null
+						isPersonal ? <GlassNavIcon href="/log" label="Log" isActive={isLogActive} variant="mobile" showLabel>
+							<Icon name="lucide:scroll-text" class="w-5 h-5" />
+						</GlassNavIcon> : null
 					}
-					<a href="/inspiration" class:list={["py-2 px-3 rounded-lg text-inherit no-underline transition-colors duration-200 hover:text-accent focus-visible:text-accent", lightbulbClass]} aria-label="영감" data-lightbulb-mobile>
-						<Icon name="lucide:lightbulb" class="w-6 h-6" />
-					</a>
+					<GlassNavIcon href="/inspiration" label="영감" isActive={isInspirationActive} variant="mobile" showLabel className={lightbulbClass} data-lightbulb-mobile>
+						<Icon name="lucide:lightbulb" class="w-5 h-5" />
+					</GlassNavIcon>
 				</div>
 			</details>
 		</div>
