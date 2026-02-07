@@ -34,9 +34,7 @@ const logs = (await getCollection('log'))
 const monthName = new Date(year, month).toLocaleString('default', { month: 'long' });
 ---
 
-<!doctype html>
-
-<Layout title={`Log ${monthName} ${year} | ${SITE_TITLE}`} description={SITE_DESCRIPTION}></Layout>
+<Layout title={`Log ${monthName} ${year} | ${SITE_TITLE}`} description={SITE_DESCRIPTION}>
 		<Header id="blog-header" />
 		<BlurTop />
 		{isPersonal ? (

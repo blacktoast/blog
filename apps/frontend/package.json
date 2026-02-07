@@ -11,8 +11,8 @@
     "astro": "astro",
     "sync": "bun run script/main.ts",
     "test": "pnpm test",
-    "deploy": "pnpm build && npx wrangler deploy --env main",
-    "deploy:personal": "pnpm build && npx wrangler deploy --env personal",
+    "deploy": "pnpm build:main && npx wrangler deploy --env main",
+    "deploy:personal": "pnpm build:personal && npx wrangler deploy --env personal",
     "doc:update": "pnpm sync && git add . && git commit -m 'chore: update docs' && git push"
   },
   "dependencies": {
