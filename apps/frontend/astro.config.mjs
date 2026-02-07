@@ -23,7 +23,7 @@ import preact from "@astrojs/preact";
 // https://astro.build/config
 export default defineConfig({
   site: SITE.url,
-  integrations: [mdx(), sitemap(), icon({ iconDir: false }), preact()],
+  integrations: [mdx(), sitemap(), icon(), preact()],
   adapter: cloudflare(),
 
   markdown: {
