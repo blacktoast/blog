@@ -1,6 +1,7 @@
 ---
-import HeaderLink from './HeaderLink.astro';
 import GlassNavIcon from './GlassNavIcon.tsx';
+import DrillIcon from './DrillIcon.astro';
+import NavBar from './NavBar.tsx';
 import LogoImgDm from '@/assets/text-logo-dm.webp';
 import LogoImgLm from '@/assets/text-logo-lm.webp';
 import LogoSpring from "@/assets/text-logo-spring.png";
@@ -21,6 +22,16 @@ const isBlogActive = pathname.startsWith('/blog');
 const isPebblesActive = pathname.startsWith('/pebbles');
 const isLogActive = pathname.startsWith('/log');
 const isInspirationActive = pathname.startsWith('/inspiration');
+const isDrillActive = pathname.startsWith('/drill');
+
+// NavBar items for desktop
+const navItems = [
+	{ id: 'blog', href: '/blog', label: 'Blog', icon: 'book-text' },
+	{ id: 'pebbles', href: '/pebbles', label: 'Pebbles', icon: 'pebbles' },
+	...(isPersonal ? [{ id: 'log', href: '/log', label: 'Log', icon: 'scroll-text' }] : []),
+	{ id: 'inspiration', href: '/inspiration', label: '영감', icon: 'lightbulb' },
+	{ id: 'drill', href: '/drill', label: '작업실', icon: 'drill' },
+];
 ---
 
 <header id={id} class="m-0 px-4 bg-background/80 dark:bg-background/30 border-b border-border text-foreground mb-4">
@@ -33,25 +44,7 @@ const isInspirationActive = pathname.startsWith('/inspiration');
 
 		<div class="flex items-center gap-1.5">
 			<div class="flex items-center flex-wrap gap-2 max-[720px]:hidden">
-				<GlassNavIcon href="/blog" label="Blog" isActive={isBlogActive}>
-					<Icon name="lucide:book-text" class="w-5 h-5" />
-				</GlassNavIcon>
-				<GlassNavIcon href="/pebbles" label="Pebbles" isActive={isPebblesActive}>
-					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-						<g stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-							<path d="M14 21L16 14L20 15L22 19L20.5 21H14Z"/>
-							<path d="M16 14L14 6L6 9L3 21H14"/>
-						</g>
-					</svg>
-				</GlassNavIcon>
-			{
-				isPersonal ? <GlassNavIcon href="/log" label="Log" isActive={isLogActive}>
-					<Icon name="lucide:scroll-text" class="w-5 h-5" />
-				</GlassNavIcon> : null
-			}
-				<GlassNavIcon href="/inspiration" label="영감" isActive={isInspirationActive} className={lightbulbClass} data-lightbulb>
-					<Icon name="lucide:lightbulb" class="w-5 h-5" />
-				</GlassNavIcon>
+				<NavBar client:load items={navItems} isInspirationPage={isInspirationPage} />
 			</div>
 			<button
 				id="theme-btn"
@@ -92,6 +85,9 @@ const isInspirationActive = pathname.startsWith('/inspiration');
 					<GlassNavIcon href="/inspiration" label="영감" isActive={isInspirationActive} variant="mobile" showLabel className={lightbulbClass} data-lightbulb-mobile>
 						<Icon name="lucide:lightbulb" class="w-5 h-5" />
 					</GlassNavIcon>
+					<GlassNavIcon href="/drill" label="작업실" isActive={isDrillActive} variant="mobile" showLabel className="drill-nav">
+						<DrillIcon />
+					</GlassNavIcon>
 				</div>
 			</details>
 		</div>
@@ -102,7 +98,9 @@ const isInspirationActive = pathname.startsWith('/inspiration');
 	#mobile-menu[open] > summary {
 		opacity: 0.5;
 	}
+</style>
 
+<style is:global>
 	/* 전구 "불 켜진" 효과 - inspiration 페이지에서만 적용 */
 	.lightbulb-lit {
 		color: var(--color-accent);
@@ -121,6 +119,122 @@ const isInspirationActive = pathname.startsWith('/inspiration');
 			        drop-shadow(0 0 20px var(--color-accent))
 			        drop-shadow(0 0 30px var(--color-accent));
 		}
+	}
+
+	/* === Drill icon: overflow override === */
+	.drill-nav {
+		overflow: visible !important;
+	}
+
+	/* === Drill icon: base states === */
+	.drill-nav .drill-wrapper {
+		transform-origin: 16px 16px;
+		transform: translate(-0.3px, 1px) rotate(-30deg);
+		transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+	}
+
+	.drill-nav .trigger {
+		transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+	}
+
+	.drill-nav .rock-mover {
+		transform: translateX(-15px);
+		opacity: 0;
+		transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s;
+	}
+
+	.drill-nav .spark {
+		stroke-dasharray: 10;
+		stroke-dashoffset: 10;
+		stroke-linecap: round;
+		opacity: 0;
+	}
+
+	.drill-nav .debris {
+		opacity: 0;
+	}
+
+	/* === Drill icon: hover states === */
+
+	/* Drill body recoils on hover (gap for sparks) */
+	.drill-nav:hover .drill-wrapper {
+		transform: translate(1.4px, -0.7px) rotate(-30deg);
+	}
+
+	/* Drill body vibrates */
+	.drill-nav:hover .drill-vibrate {
+		animation: drill-vibrate 0.1s linear infinite;
+	}
+
+	/* Trigger pulled */
+	.drill-nav:hover .trigger {
+		transform: translateX(1.5px);
+	}
+
+	/* Bit spins */
+	.drill-nav:hover .bit {
+		stroke-dasharray: 2 2;
+		animation: drill-spin-bit 0.2s linear infinite;
+	}
+
+	/* Rock slides in */
+	.drill-nav:hover .rock-mover {
+		transform: translateX(0);
+		opacity: 1;
+	}
+
+	/* Rock vibrates on impact (delayed) */
+	.drill-nav:hover .rock-vibrate {
+		animation: drill-rock-shake 0.1s linear infinite 0.3s;
+	}
+
+	/* Sparks fire from contact point */
+	.drill-nav:hover .spark { opacity: 1; }
+	.drill-nav:hover .spark-1 { animation: drill-spark-shoot 0.3s linear infinite 0.3s; }
+	.drill-nav:hover .spark-2 { animation: drill-spark-shoot 0.35s linear infinite 0.35s; }
+	.drill-nav:hover .spark-3 { animation: drill-spark-shoot 0.28s linear infinite 0.4s; }
+
+	/* Debris particles fly out */
+	.drill-nav:hover .d1 { animation: drill-debris-1 0.4s ease-out infinite 0.3s; }
+	.drill-nav:hover .d2 { animation: drill-debris-2 0.5s ease-out infinite 0.4s; }
+	.drill-nav:hover .d3 { animation: drill-debris-3 0.45s ease-out infinite 0.35s; }
+
+	/* === Drill keyframes === */
+	@keyframes drill-vibrate {
+		0%, 100% { transform: translate(0, 0); }
+		25% { transform: translate(-0.5px, -0.5px); }
+		75% { transform: translate(0.5px, 0.5px); }
+	}
+
+	@keyframes drill-spin-bit {
+		to { stroke-dashoffset: 4; }
+	}
+
+	@keyframes drill-rock-shake {
+		0%, 100% { transform: translate(0, 0); }
+		25% { transform: translate(-0.3px, 0.3px); }
+		75% { transform: translate(0.3px, -0.3px); }
+	}
+
+	@keyframes drill-spark-shoot {
+		0% { stroke-dashoffset: 10; }
+		50% { stroke-dashoffset: 0; }
+		100% { stroke-dashoffset: -10; }
+	}
+
+	@keyframes drill-debris-1 {
+		0% { transform: translate(0, 0) scale(1); opacity: 1; }
+		100% { transform: translate(6px, -6px) scale(0); opacity: 0; }
+	}
+
+	@keyframes drill-debris-2 {
+		0% { transform: translate(0, 0) scale(1); opacity: 1; }
+		100% { transform: translate(5px, 7px) scale(0); opacity: 0; }
+	}
+
+	@keyframes drill-debris-3 {
+		0% { transform: translate(0, 0) scale(1); opacity: 1; }
+		100% { transform: translate(8px, -2px) scale(0); opacity: 0; }
 	}
 </style>
 
@@ -231,35 +345,24 @@ const init = () => {
 		document.removeEventListener('click', handleDocumentClick);
 	});
 
-	// 전구 클릭 이벤트 (inspiration 페이지에서만 동작)
+	// 전구 클릭 이벤트 - 모바일만 (데스크톱은 NavBar 컴포넌트에서 처리)
 	const setupLightbulbClick = () => {
-		const lightbulbDesktop = document.querySelector('[data-lightbulb]');
 		const lightbulbMobile = document.querySelector('[data-lightbulb-mobile]');
 
 		const handleLightbulbClick = (event: Event) => {
-			// inspiration 페이지인지 확인
 			if (!window.location.pathname.includes('inspiration')) return;
 
 			event.preventDefault();
 			const target = event.currentTarget as HTMLElement;
 			const rect = target.getBoundingClientRect();
 
-			// 전구 아이콘 중심 좌표 계산
 			const x = rect.left + rect.width / 2;
 			const y = rect.top + rect.height / 2;
 
-			// 커스텀 이벤트 발생
 			window.dispatchEvent(new CustomEvent('lightbulb-click', {
 				detail: { x, y }
 			}));
 		};
-
-		if (lightbulbDesktop) {
-			lightbulbDesktop.addEventListener('click', handleLightbulbClick);
-			cleanupFunctions.push(() => {
-				lightbulbDesktop.removeEventListener('click', handleLightbulbClick);
-			});
-		}
 
 		if (lightbulbMobile) {
 			lightbulbMobile.addEventListener('click', handleLightbulbClick);
