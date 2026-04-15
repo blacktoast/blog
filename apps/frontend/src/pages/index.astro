@@ -4,6 +4,7 @@ import Footer from '@/components/Footer.astro';
 import Layout from '@/layouts/Layout.astro';
 import { Icon } from 'astro-icon/components';
 import BlogTitleAnimation from '@/components/BlogTitleAnimation.tsx';
+import PersonalHoverLink from '@/components/PersonalHoverLink.tsx';
 const isPersonal = import.meta.env.PUBLIC_TYPE === 'personal';
 
 ---
@@ -31,7 +32,7 @@ const isPersonal = import.meta.env.PUBLIC_TYPE === 'personal';
 						I'm a frontend engineer working in the web3 industry. 
 						<br/>
 						<br/>
-						This blog is a space where I share my personal stories, things I've learned, and knowledge I want to pass on to others.
+						This blog is a space where I share my {isPersonal ? <span>personal</span> : <PersonalHoverLink client:load />} stories, things I've learned, and knowledge I want to pass on to others.
 					</p>
 				<details class="section-guide mt-6" open>
 					<summary class="cursor-pointer text-sm text-foreground/70 hover:text-foreground transition-colors list-none">
@@ -89,17 +90,6 @@ const isPersonal = import.meta.env.PUBLIC_TYPE === 'personal';
 
 				</details>
 
-				{!isPersonal ? (
-					<p class="text-sm text-foreground/40 leading-relaxed mt-4">
-						Want to get closer to me or become better friends?
-						<br/>
-						Here's where you'll find my personal story. <a href="https://personal.haedal.blog/" class="text-accent">Click here</a>
-						<br/>
-						<span class="text-red-400/90 text-sm">
-							Disclaimer: This contains my personal story, so please don't click carelessly. 
-						</span>
-					</p>
-					) : null}
 			</div>
 			</div>
 			</section>

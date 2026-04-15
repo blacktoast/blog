@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'preact/hooks';
+import { useState } from 'preact/hooks';
 import { BookText, ScrollText, Lightbulb } from 'lucide-preact';
 import styles from './NavBar.module.css';
 
@@ -19,8 +19,8 @@ const GAP = 8;
 const ICON_SIZE = 20;
 const DRILL_ICON_SIZE = 24;
 const STEP = ITEM_SIZE + GAP;
-const ACTIVE_CIRCLE = 20;
 const HOVER_CIRCLE = 28;
+const HOVER_OFFSET = -6;
 
 function PebblesIcon() {
   return (
@@ -95,44 +95,16 @@ function renderIcon(icon: string) {
 
 export default function NavBar({ items, isInspirationPage }: NavBarProps) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  const [currentPath, setCurrentPath] = useState(
-    typeof window !== 'undefined' ? window.location.pathname : '/',
-  );
 
-  useEffect(() => {
-    const handle = () => setCurrentPath(window.location.pathname);
-    document.addEventListener('astro:page-load', handle);
-    return () => document.removeEventListener('astro:page-load', handle);
-  }, []);
+  const hasTarget = hoveredIndex !== null;
+  const targetIndex = hoveredIndex ?? 0;
 
-  const activeIndex = useMemo(() => {
-    return items.findIndex((item) => currentPath.startsWith(item.href));
-  }, [currentPath, items]);
+  const circleLeft = hasTarget ? targetIndex * STEP + HOVER_OFFSET : 0;
+  const circleTop = hasTarget ? HOVER_OFFSET : 0;
+  const circleCenterX = circleLeft + HOVER_CIRCLE / 2;
+  const circleCenterY = circleTop + HOVER_CIRCLE / 2;
 
-  const targetIndex = hoveredIndex ?? activeIndex;
-  const isHovering = hoveredIndex !== null && hoveredIndex !== activeIndex;
-  const hasTarget = targetIndex >= 0;
-
-  // Accent circle geometry
-  const circleSize = isHovering ? HOVER_CIRCLE : ACTIVE_CIRCLE;
-  const activeOffset = (ITEM_SIZE - ACTIVE_CIRCLE) / 2; // 10
-  const hoverOffset = -6;
-  const circleOffset = isHovering ? hoverOffset : activeOffset;
-
-  const circleLeft = hasTarget ? targetIndex * STEP + circleOffset : 0;
-  const circleTop = hasTarget ? circleOffset : 0;
-  const circleCenterX = circleLeft + circleSize / 2;
-  const circleCenterY = circleTop + circleSize / 2;
-
-  // Mask style for each icon's highlight layer
   const getMaskStyle = (i: number): Record<string, string> => {
-    if (!hasTarget) {
-      return {
-        maskImage: 'none',
-        WebkitMaskImage: 'none',
-      };
-    }
-
     const iconSize = items[i].icon === 'drill' ? DRILL_ICON_SIZE : ICON_SIZE;
     const iconLeft = i * STEP + (ITEM_SIZE - iconSize) / 2;
     const iconTop = (ITEM_SIZE - iconSize) / 2;
@@ -140,7 +112,7 @@ export default function NavBar({ items, isInspirationPage }: NavBarProps) {
     const cxLocal = circleCenterX - iconLeft;
     const cyLocal = circleCenterY - iconTop;
 
-    const maskRadius = circleSize / 2 + 6;
+    const maskRadius = HOVER_CIRCLE / 2 + 6;
     const maskDiameter = maskRadius * 2;
     const maskPosX = cxLocal - maskRadius;
     const maskPosY = cyLocal - maskRadius;
@@ -177,14 +149,13 @@ export default function NavBar({ items, isInspirationPage }: NavBarProps) {
 
   return (
     <div class={styles.container}>
-      {/* Shared accent circle */}
       <div
         class={styles.accentCircle}
         style={{
           left: `${circleLeft}px`,
           top: `${circleTop}px`,
-          width: `${circleSize}px`,
-          height: `${circleSize}px`,
+          width: `${HOVER_CIRCLE}px`,
+          height: `${HOVER_CIRCLE}px`,
           opacity: hasTarget ? 1 : 0,
         }}
       />
@@ -192,7 +163,6 @@ export default function NavBar({ items, isInspirationPage }: NavBarProps) {
       {items.map((item, i) => {
         const isDrill = item.icon === 'drill';
         const isLightbulb = item.icon === 'lightbulb';
-        const isActive = i === activeIndex;
         const isLightbulbLit = isLightbulb && isInspirationPage;
         const iconSize = isDrill ? DRILL_ICON_SIZE : ICON_SIZE;
 
@@ -225,14 +195,13 @@ export default function NavBar({ items, isInspirationPage }: NavBarProps) {
                 }}
               >
                 <span class={styles.iconBase}>{renderIcon(item.icon)}</span>
-                {!isLightbulbLit && (
+                {hasTarget && !isLightbulbLit && (
                   <span class={styles.iconHighlight} style={getMaskStyle(i)}>
                     {renderIcon(item.icon)}
                   </span>
                 )}
               </span>
             </span>
-            {isActive && <span class={styles.activeDot} />}
           </a>
         );
       })}
