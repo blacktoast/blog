@@ -27,8 +27,12 @@ const isDrillActive = pathname.startsWith('/drill');
 // NavBar items for desktop
 const navItems = [
 	{ id: 'blog', href: '/blog', label: 'Blog', icon: 'book-text' },
-	{ id: 'pebbles', href: '/pebbles', label: 'Pebbles', icon: 'pebbles' },
-	...(isPersonal ? [{ id: 'log', href: '/log', label: 'Log', icon: 'scroll-text' }] : []),
+	...(isPersonal
+		? [
+			{ id: 'pebbles', href: '/pebbles', label: 'Pebbles', icon: 'pebbles' },
+			{ id: 'log', href: '/log', label: 'Log', icon: 'scroll-text' },
+		]
+		: []),
 	{ id: 'inspiration', href: '/inspiration', label: '영감', icon: 'lightbulb' },
 	{ id: 'drill', href: '/drill', label: '작업실', icon: 'drill' },
 ];
@@ -69,18 +73,22 @@ const navItems = [
 					<GlassNavIcon href="/blog" label="Blog" isActive={isBlogActive} variant="mobile" showLabel>
 						<Icon name="lucide:book-text" class="w-5 h-5" />
 					</GlassNavIcon>
-					<GlassNavIcon href="/pebbles" label="Pebbles" isActive={isPebblesActive} variant="mobile" showLabel>
-						<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-							<g stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-								<path d="M14 21L16 14L20 15L22 19L20.5 21H14Z"/>
-								<path d="M16 14L14 6L6 9L3 21H14"/>
-							</g>
-						</svg>
-					</GlassNavIcon>
 					{
-						isPersonal ? <GlassNavIcon href="/log" label="Log" isActive={isLogActive} variant="mobile" showLabel>
-							<Icon name="lucide:scroll-text" class="w-5 h-5" />
-						</GlassNavIcon> : null
+						isPersonal ? (
+							<>
+								<GlassNavIcon href="/pebbles" label="Pebbles" isActive={isPebblesActive} variant="mobile" showLabel>
+									<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+										<g stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+											<path d="M14 21L16 14L20 15L22 19L20.5 21H14Z"/>
+											<path d="M16 14L14 6L6 9L3 21H14"/>
+										</g>
+									</svg>
+								</GlassNavIcon>
+								<GlassNavIcon href="/log" label="Log" isActive={isLogActive} variant="mobile" showLabel>
+									<Icon name="lucide:scroll-text" class="w-5 h-5" />
+								</GlassNavIcon>
+							</>
+						) : null
 					}
 					<GlassNavIcon href="/inspiration" label="영감" isActive={isInspirationActive} variant="mobile" showLabel className={lightbulbClass} data-lightbulb-mobile>
 						<Icon name="lucide:lightbulb" class="w-5 h-5" />

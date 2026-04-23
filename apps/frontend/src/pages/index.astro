@@ -2,7 +2,6 @@
 import Header from '@/components/Header.astro';
 import Footer from '@/components/Footer.astro';
 import Layout from '@/layouts/Layout.astro';
-import { Icon } from 'astro-icon/components';
 import BlogTitleAnimation from '@/components/BlogTitleAnimation.tsx';
 import PersonalHoverLink from '@/components/PersonalHoverLink.tsx';
 const isPersonal = import.meta.env.PUBLIC_TYPE === 'personal';
@@ -34,61 +33,6 @@ const isPersonal = import.meta.env.PUBLIC_TYPE === 'personal';
 						<br/>
 						This blog is a space where I share my {isPersonal ? <span>personal</span> : <PersonalHoverLink client:load />} stories, things I've learned, and knowledge I want to pass on to others.
 					</p>
-				<details class="section-guide mt-6" open>
-					<summary class="cursor-pointer text-sm text-foreground/70 hover:text-foreground transition-colors list-none">
-						<span class="inline-flex items-center gap-2">
-							<span>Section guide</span>
-							<Icon name="lucide:chevron-down" class="chevron-icon w-4 h-4 transition-transform" />
-						</span>
-						<p class="intro-note text-sm text-foreground/70">
-							For those who prefer to skip personal content, here's a guide to each section
-						</p>
-					</summary>
-					<div class="sections-grid grid grid-cols-1 md:grid-cols-3 gap-3 mt-4">
-						<a href="/blog" class="section-card group p-3 rounded-lg border border-border bg-background/50 hover:bg-background/80 transition-all duration-200 hover:border-accent/50">
-							<div class="flex items-center gap-3">
-								<div class="icon-wrapper shrink-0 w-8 h-8 rounded-md bg-accent/10 group-hover:bg-accent/20 flex items-center justify-center transition-colors">
-									<Icon name="lucide:book-open" class="w-4 h-4" />
-								</div>
-								<div class="flex-1 min-w-0">
-									<h3 class="font-semibold text-sm text-foreground group-hover:text-accent transition-colors">Blog</h3>
-									<p class="text-xs text-foreground/60 leading-snug mt-0.5">
-										Well-organized articles
-									</p>
-								</div>
-							</div>
-						</a>
-
-						<a href="/pebbles" class="section-card group p-3 rounded-lg border border-border bg-background/50 hover:bg-background/80 transition-all duration-200 hover:border-accent/50">
-							<div class="flex items-center gap-3">
-								<div class="icon-wrapper shrink-0 w-8 h-8 rounded-md bg-accent/10 group-hover:bg-accent/20 flex items-center justify-center transition-colors">
-									<span class="text-lg">🪨</span>
-								</div>
-								<div class="flex-1 min-w-0">
-									<h3 class="font-semibold text-sm text-foreground group-hover:text-accent transition-colors">Pebbles</h3>
-									<p class="text-xs text-foreground/60 leading-snug mt-0.5">
-										TIL and learning drafts
-									</p>
-								</div>
-							</div>
-						</a>
-						{isPersonal ? (
-							<a href="/log" class="section-card group p-3 rounded-lg border border-border bg-background/50 hover:bg-background/80 transition-all duration-200 hover:border-accent/50">
-								<div class="flex items-center gap-3">
-									<div class="icon-wrapper shrink-0 w-8 h-8 rounded-md bg-accent/10 group-hover:bg-accent/20 flex items-center justify-center transition-colors">
-										<Icon name="lucide:scroll-text" class="w-4 h-4" />
-									</div>
-									<div class="flex-1 min-w-0">
-										<h3 class="font-semibold text-sm text-foreground group-hover:text-accent transition-colors">Log</h3>
-										<p class="text-xs text-foreground/60 leading-snug mt-0.5">
-											Personal thoughts
-										</p>
-									</div>
-								</div>
-							</a>
-						) : null}
-
-				</details>
 
 			</div>
 			</div>
@@ -97,43 +41,12 @@ const isPersonal = import.meta.env.PUBLIC_TYPE === 'personal';
 		<Footer />
 </Layout>
 
-<style>	
-	.blog-name-container{
-	}
-
+<style>
 	.intro-section {
 		max-width: 72ch;
 	}
 
-	.section-guide summary {
-		list-style: none;
-	}
-
-	.section-guide summary::-webkit-details-marker {
-		display: none;
-	}
-
-	.section-guide[open] summary .chevron-icon {
-		transform: rotate(180deg);
-	}
-
-	.section-card {
-		text-decoration: none;
-	}
-
-	.section-card:focus-visible {
-		outline: 2px dashed var(--color-accent);
-		outline-offset: 2px;
-	}
-
-	@media (max-width: 768px) {
-		.sections-grid {
-			grid-template-columns: 1fr;
-		}
-	}
 	.font-HomeHello {
 		font-family: 'HomeHello', sans-serif;
 	}
-
-	/* BlogTitleAnimation 스타일은 컴포넌트 내부로 이동됨 */
 </style>

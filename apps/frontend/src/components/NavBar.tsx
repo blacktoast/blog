@@ -1,4 +1,4 @@
-import { useState } from 'preact/hooks';
+import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { BookText, ScrollText, Lightbulb } from 'lucide-preact';
 import styles from './NavBar.module.css';
 
@@ -19,8 +19,13 @@ const GAP = 8;
 const ICON_SIZE = 20;
 const DRILL_ICON_SIZE = 24;
 const STEP = ITEM_SIZE + GAP;
+const ACTIVE_CIRCLE = 20;
 const HOVER_CIRCLE = 28;
 const HOVER_OFFSET = -6;
+const ACTIVE_OFFSET = (ITEM_SIZE - ACTIVE_CIRCLE) / 2;
+
+const CLICK_SETTLE_TRANSITION =
+  'left 140ms cubic-bezier(0.34, 1.56, 0.64, 1), top 140ms cubic-bezier(0.34, 1.56, 0.64, 1), width 140ms cubic-bezier(0.34, 1.56, 0.64, 1), height 140ms cubic-bezier(0.34, 1.56, 0.64, 1), opacity 140ms ease-out';
 
 function PebblesIcon() {
   return (
@@ -95,14 +100,49 @@ function renderIcon(icon: string) {
 
 export default function NavBar({ items, isInspirationPage }: NavBarProps) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [clickedIndex, setClickedIndex] = useState<number | null>(null);
+  const [currentPath, setCurrentPath] = useState(
+    typeof window !== 'undefined' ? window.location.pathname : '/',
+  );
+  const circleRef = useRef<HTMLDivElement>(null);
 
-  const hasTarget = hoveredIndex !== null;
-  const targetIndex = hoveredIndex ?? 0;
+  useEffect(() => {
+    setCurrentPath(window.location.pathname);
 
-  const circleLeft = hasTarget ? targetIndex * STEP + HOVER_OFFSET : 0;
-  const circleTop = hasTarget ? HOVER_OFFSET : 0;
-  const circleCenterX = circleLeft + HOVER_CIRCLE / 2;
-  const circleCenterY = circleTop + HOVER_CIRCLE / 2;
+    const handle = () => {
+      setCurrentPath(window.location.pathname);
+      setClickedIndex(null);
+    };
+    document.addEventListener('astro:page-load', handle);
+    return () => document.removeEventListener('astro:page-load', handle);
+  }, []);
+
+  const activeIndex = useMemo(() => {
+    return items.findIndex((item) => currentPath.startsWith(item.href));
+  }, [currentPath, items]);
+
+  // Priority: clicked > hover (non-active) > active > none
+  let targetIndex = -1;
+  let useActiveGeometry = false;
+
+  if (clickedIndex !== null) {
+    targetIndex = clickedIndex;
+    useActiveGeometry = true;
+  } else if (hoveredIndex !== null && hoveredIndex !== activeIndex) {
+    targetIndex = hoveredIndex;
+    useActiveGeometry = false;
+  } else if (activeIndex >= 0) {
+    targetIndex = activeIndex;
+    useActiveGeometry = true;
+  }
+
+  const hasTarget = targetIndex >= 0;
+  const circleSize = useActiveGeometry ? ACTIVE_CIRCLE : HOVER_CIRCLE;
+  const circleOffset = useActiveGeometry ? ACTIVE_OFFSET : HOVER_OFFSET;
+  const circleLeft = hasTarget ? targetIndex * STEP + circleOffset : 0;
+  const circleTop = hasTarget ? circleOffset : 0;
+  const circleCenterX = circleLeft + circleSize / 2;
+  const circleCenterY = circleTop + circleSize / 2;
 
   const getMaskStyle = (i: number): Record<string, string> => {
     const iconSize = items[i].icon === 'drill' ? DRILL_ICON_SIZE : ICON_SIZE;
@@ -112,7 +152,7 @@ export default function NavBar({ items, isInspirationPage }: NavBarProps) {
     const cxLocal = circleCenterX - iconLeft;
     const cyLocal = circleCenterY - iconTop;
 
-    const maskRadius = HOVER_CIRCLE / 2 + 6;
+    const maskRadius = circleSize / 2 + 6;
     const maskDiameter = maskRadius * 2;
     const maskPosX = cxLocal - maskRadius;
     const maskPosY = cyLocal - maskRadius;
@@ -132,6 +172,10 @@ export default function NavBar({ items, isInspirationPage }: NavBarProps) {
     };
   };
 
+  const handleItemMouseDown = (i: number) => {
+    setClickedIndex(i);
+  };
+
   const handleLightbulbClick = (e: MouseEvent) => {
     if (!isInspirationPage) return;
     e.preventDefault();
@@ -147,18 +191,28 @@ export default function NavBar({ items, isInspirationPage }: NavBarProps) {
     );
   };
 
+  // Preact+Astro hydration has an edge case where SSR-rendered elements
+  // don't get their class/data attributes updated on the first client render,
+  // even though children are added correctly. Set attributes imperatively
+  // via ref to bypass this.
+  useEffect(() => {
+    const el = circleRef.current;
+    if (!el) return;
+    el.setAttribute('data-visible', hasTarget ? 'true' : 'false');
+    el.style.left = `${circleLeft}px`;
+    el.style.top = `${circleTop}px`;
+    el.style.width = `${circleSize}px`;
+    el.style.height = `${circleSize}px`;
+    if (clickedIndex !== null) {
+      el.style.transition = CLICK_SETTLE_TRANSITION;
+    } else {
+      el.style.removeProperty('transition');
+    }
+  }, [hasTarget, circleLeft, circleTop, circleSize, clickedIndex]);
+
   return (
     <div class={styles.container}>
-      <div
-        class={styles.accentCircle}
-        style={{
-          left: `${circleLeft}px`,
-          top: `${circleTop}px`,
-          width: `${HOVER_CIRCLE}px`,
-          height: `${HOVER_CIRCLE}px`,
-          opacity: hasTarget ? 1 : 0,
-        }}
-      />
+      <div ref={circleRef} class={styles.accentCircle} data-visible="false" />
 
       {items.map((item, i) => {
         const isDrill = item.icon === 'drill';
@@ -183,6 +237,7 @@ export default function NavBar({ items, isInspirationPage }: NavBarProps) {
             style={isDrill ? { overflow: 'visible' } : undefined}
             onMouseEnter={() => setHoveredIndex(i)}
             onMouseLeave={() => setHoveredIndex(null)}
+            onMouseDown={() => handleItemMouseDown(i)}
             onClick={isLightbulb ? handleLightbulbClick : undefined}
             data-lightbulb={isLightbulb || undefined}
           >

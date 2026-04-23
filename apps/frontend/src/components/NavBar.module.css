@@ -67,10 +67,10 @@
   color: var(--color-accent);
   pointer-events: none;
   transition:
-    mask-position 500ms ease,
-    mask-size 500ms ease,
-    -webkit-mask-position 500ms ease,
-    -webkit-mask-size 500ms ease;
+    mask-position 380ms cubic-bezier(0.23, 1, 0.32, 1),
+    mask-size 380ms cubic-bezier(0.23, 1, 0.32, 1),
+    -webkit-mask-position 380ms cubic-bezier(0.23, 1, 0.32, 1),
+    -webkit-mask-size 380ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 .accentCircle {
@@ -80,12 +80,17 @@
   filter: blur(8px);
   pointer-events: none;
   z-index: 0;
+  opacity: 0;
   transition:
-    left 500ms ease,
-    top 500ms ease,
-    width 500ms ease,
-    height 500ms ease,
-    opacity 300ms ease;
+    left 380ms cubic-bezier(0.23, 1, 0.32, 1),
+    top 380ms cubic-bezier(0.23, 1, 0.32, 1),
+    width 380ms cubic-bezier(0.23, 1, 0.32, 1),
+    height 380ms cubic-bezier(0.23, 1, 0.32, 1),
+    opacity 220ms ease-out;
+}
+
+.accentCircle[data-visible='true'] {
+  opacity: 1;
 }
 
 .activeDot {
