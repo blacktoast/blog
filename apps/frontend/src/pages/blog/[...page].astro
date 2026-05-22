@@ -4,12 +4,16 @@ import FormattedDate from '@/components/FormattedDate.astro';
 import Layout from '@/layouts/Layout.astro';
 import { getCollection, type CollectionEntry } from 'astro:content';
 import { Icon } from 'astro-icon/components';
+import { PERSONAL_TAGS } from '@/constants';
 
 export async function getStaticPaths({ paginate }: any) {
-	const allPosts = (await getCollection('blog')).sort(
-		(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
-	);
-	
+	const isPersonal = import.meta.env.PUBLIC_TYPE === 'personal';
+	const allPosts = (await getCollection('blog'))
+		.filter((post) => isPersonal ? true : !post.data.tags.some((tag) => PERSONAL_TAGS.includes(tag)))
+		.sort(
+			(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+		);
+
 	return paginate(allPosts, { pageSize: 10 });
 }
 

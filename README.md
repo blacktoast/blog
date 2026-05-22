@@ -179,6 +179,103 @@ npx wrangler secret put YOUR_SECRET_NAME
 - 📊 **RSS 피드** - 블로그 구독 지원
 - 🖼️ **OG 이미지 자동 생성** - 소셜 미디어 공유 최적화
 - ⚡ **엣지 배포** - Cloudflare Workers를 통한 빠른 로딩
+- 🔒 **Personal-only 글** - 특정 태그가 붙은 글은 개인용 빌드에서만 노출
+
+## Personal-only 글 (개인용 빌드 전용)
+
+특정 태그가 붙은 글을 main(공개) 빌드에서 완전히 제외하고, personal(개인) 빌드에서만 노출시킬 수 있습니다.
+
+### 작성 방법
+
+frontmatter `tags`에 `personal`을 추가하기만 하면 됩니다:
+
+```markdown
+---
+title: "비공개 글 제목"
+description: "이 글은 개인용 빌드에서만 보입니다"
+pubDate: 2026-04-29
+tags: [personal]
+---
+
+본문...
+```
+
+예시 파일: `apps/frontend/src/content/blog/_example-personal.md`
+
+대상 콜렉션: **blog**, **pebbles** 모두 동일하게 동작합니다 (log는 별도 패턴 — 개인 빌드에서만 콘텐츠가 채워집니다).
+
+### 어디서 차단되나?
+
+`PUBLIC_TYPE=main` 빌드에서 personal 글은 다음 모든 표면에서 사라집니다:
+
+- 슬러그 페이지 (`/blog/<slug>/`)
+- 블로그 리스트 (`/blog/`)
+- OG 이미지 (`/blog/og/<slug>.png`)
+- RSS 피드 (`/rss.xml`)
+- sitemap (`/sitemap-*.xml`)
+
+`PUBLIC_TYPE=personal` 빌드에서는 평소 글과 똑같이 노출됩니다.
+
+### 추가 태그 지정
+
+`personal` 외에 다른 태그를 가리고 싶다면 `apps/frontend/src/constants.ts`의 `PERSONAL_TAGS` 배열에 추가하세요:
+
+```typescript
+export const PERSONAL_TAGS = ["personal", "draft"]; // 예: draft 추가
+```
+
+이 한 곳만 수정하면 6개 라우트(blog list/slug/og/rss + pebbles list/slug/og)에 자동 반영됩니다.
+
+### 개발 서버에서 테스트
+
+기본 `pnpm dev`는 `PUBLIC_TYPE` 미설정 → main 동작입니다. 개인 빌드 동작을 보려면 전용 스크립트를 쓰세요:
+
+```bash
+# 공개 사이트 모드 (personal 글 비노출)
+pnpm dev:main
+# → http://localhost:4321/blog/_example-personal/  → 404
+
+# 개인 사이트 모드 (모든 글 노출)
+pnpm dev:personal
+# → http://localhost:4321/blog/_example-personal/  → 정상 렌더
+# → http://localhost:4321/blog/                    → 리스트에 예시 글 보임
+```
+
+### 빌드 산출물 비교 검증
+
+main과 personal 빌드를 양쪽 다 만들어 cross-build leak을 직접 grep할 수 있습니다:
+
+```bash
+cd apps/frontend
+
+# 1. main 빌드 → dist-main/으로 이동
+pnpm build:main && mv dist dist-main
+
+# 2. personal 빌드 → dist-personal/으로 이동
+pnpm build:personal && mv dist dist-personal
+
+# 3. main에 personal 글 누수 검증 (모두 빈 출력이면 OK)
+grep -r "예시 — Personal 전용 글" dist-main/        # 0 hits
+ls dist-main/blog/_example-personal 2>&1            # No such file
+ls dist-main/blog/og/_example-personal.png 2>&1     # No such file
+grep -c "_example-personal" dist-main/rss.xml       # 0
+
+# 4. personal에는 정상 노출 검증
+ls dist-personal/blog/_example-personal/index.html  # exists
+ls dist-personal/blog/og/_example-personal.png      # exists
+grep -c "_example-personal" dist-personal/rss.xml   # ≥1
+```
+
+`dist-main/`, `dist-personal/`는 `.gitignore`에 등록되어 있으므로 commit되지 않습니다.
+
+### 배포
+
+배포 명령은 자동으로 알맞은 `PUBLIC_TYPE`을 설정합니다:
+
+```bash
+pnpm deploy           # main 빌드 → 공개 도메인
+pnpm deploy:personal  # personal 빌드 → 개인 도메인
+```
 
 ## 라이선스
 

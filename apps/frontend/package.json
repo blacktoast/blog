@@ -4,6 +4,8 @@
   "version": "0.0.1",
   "scripts": {
     "dev": "astro dev",
+    "dev:main": "PUBLIC_TYPE=main astro dev",
+    "dev:personal": "PUBLIC_TYPE=personal astro dev",
     "build": "astro build",
     "build:main": "PUBLIC_TYPE=main astro build",
     "build:personal": "PUBLIC_TYPE=personal astro build",
@@ -35,11 +37,13 @@
     "rehype-katex": "^7.0.1",
     "remark-breaks": "^4.0.0",
     "remark-collapse": "^0.1.2",
+    "remark-directive": "^4.0.0",
     "remark-math": "^6.0.0",
     "remark-toc": "^9.0.0",
     "sharp": "^0.34.3",
     "tailwindcss": "^4.1.17",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "unist-util-visit": "^5.1.0"
   },
   "packageManager": "pnpm@10.24.0",
   "devDependencies": {

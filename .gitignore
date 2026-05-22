@@ -1,5 +1,8 @@
 # build output
 dist/
+# personal-tag verification artifacts (cross-build leak grep)
+dist-main/
+dist-personal/
 # generated types
 .astro/
 

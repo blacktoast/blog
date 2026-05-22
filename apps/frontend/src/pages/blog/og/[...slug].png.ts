@@ -1,14 +1,18 @@
 import type { APIRoute } from "astro";
 import { getCollection, type CollectionEntry } from "astro:content";
 import { generateOgImage } from "../../../../script/utils/generate_og_image";
+import { PERSONAL_TAGS } from "@/constants";
 
 export async function getStaticPaths() {
   const posts = await getCollection("blog");
+  const isPersonal = import.meta.env.PUBLIC_TYPE === "personal";
 
-  return posts.map((post) => ({
-    params: { slug: post.id },
-    props: post,
-  }));
+  return posts
+    .filter((post) => isPersonal ? true : !post.data.tags.some((tag) => PERSONAL_TAGS.includes(tag)))
+    .map((post) => ({
+      params: { slug: post.id },
+      props: post,
+    }));
 }
 
 export const GET: APIRoute = async ({ props }) => {
